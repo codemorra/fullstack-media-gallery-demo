@@ -1,7 +1,10 @@
 function Login() {
   return (
     <div>
-      <h1>Login</h1>
+      <section>
+        <h1>Login</h1>
+        <p>Login-Seite der Fullstack Media Gallery Demo.</p>
+      </section>
     </div>
   );
 }

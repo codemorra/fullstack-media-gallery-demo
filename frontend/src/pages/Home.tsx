@@ -1,7 +1,10 @@
 function Home() {
   return (
     <div>
-      <h1>Home</h1>
+      <section>
+        <h1>Home</h1>
+        <p>Startseite der Fullstack Media Gallery Demo.</p>
+      </section>
     </div>
   );
 }
