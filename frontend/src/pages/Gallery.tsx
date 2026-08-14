@@ -1,7 +1,10 @@
 function Gallery() {
   return (
     <div>
-      <h1>Gallery</h1>
+      <section>
+        <h1>Gallery</h1>
+        <p>Galerie der Fullstack Media Gallery Demo.</p>
+      </section>
     </div>
   );
 }
