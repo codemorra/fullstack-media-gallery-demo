@@ -97,7 +97,7 @@ def health() -> dict[str, str]:
 
 
 @app.post(
-    "/api/register",
+    "/api/auth/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
     tags=["Authentication"],
