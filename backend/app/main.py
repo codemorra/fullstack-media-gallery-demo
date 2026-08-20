@@ -166,3 +166,10 @@ def logout_user(request: Request) -> Response:
 )
 def get_current_user_route(current_user: User = Depends(get_current_user)) -> User:
     return current_user
+
+
+@app.get("/api/gallery", tags=["Gallery"])
+def get_gallery(_: User = Depends(get_current_user)):
+    return {
+        "items": [],
+    }
