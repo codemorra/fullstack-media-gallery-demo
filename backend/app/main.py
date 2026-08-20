@@ -75,6 +75,22 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    user_id = request.session.get("user_id")
+
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    user = db.get(User, user_id)
+
+    if user is None:
+        request.session.clear()
+
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    return user
+
+
 @app.get("/api/health", tags=["Health"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -140,3 +156,13 @@ def logout_user(request: Request) -> Response:
     request.session.clear()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.get(
+    "/api/auth/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["Authentication"],
+)
+def get_current_user_route(current_user: User = Depends(get_current_user)) -> User:
+    return current_user
