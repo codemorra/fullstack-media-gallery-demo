@@ -1,3 +1,6 @@
+/**
+ * Home component that displays the homepage of the Fullstack Media Gallery Demo.
+ */
 function Home() {
   return (
     <div>

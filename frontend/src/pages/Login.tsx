@@ -1,3 +1,7 @@
+/**
+ * Login component for user authentication.
+ */
+
 import { useState } from 'react';
 import type * as React from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -7,6 +11,9 @@ type LoginProps = {
   onLogin: (email: string, password: string) => Promise<void>;
 };
 
+/**
+ * Login component that renders a login form and handles user authentication.
+ */
 function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -14,12 +21,19 @@ function Login({ onLogin }: LoginProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Handles the form submission for user login.
+   * It sets the submitting state, and attempts to log in the user with the provided email and password.
+   * If the login is successful, it navigates to the gallery page.
+   * If an error occurs during login, it sets an appropriate error message.
+   */
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    // Attempt to log in the user with the provided email and password
     try {
       await onLogin(email, password);
       navigate('/gallery', { replace: true });

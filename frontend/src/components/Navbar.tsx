@@ -1,20 +1,30 @@
+/**
+ * Navbar component for the application.
+ */
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { AuthenticatedUser } from '../lib/api.ts';
 
+// Props for the Navbar component.
 type NavbarProps = {
   user: AuthenticatedUser | null;
   isCheckingAuth: boolean;
   onLogout: () => Promise<void>;
 };
 
+/**
+ * Component that renders the navigation bar with links and user authentication status.
+ */
 function Navbar({ user, isCheckingAuth, onLogout }: NavbarProps) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Handle user logout.
   async function handleLogout() {
     setErrorMessage(null);
 
+    // Attempt to log out the user and navigate to the home page.
     try {
       await onLogout();
       navigate('/');
