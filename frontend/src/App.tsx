@@ -4,6 +4,7 @@ import {
   getCurrentUser,
   isApiConfigured,
   login,
+  logout,
   register,
   type AuthenticatedUser,
 } from './lib/api.ts';
@@ -52,12 +53,23 @@ function App() {
     await register(username, email, password);
   }
 
+  async function handleLogout() {
+    await logout();
+
+    setUser(null);
+    setAuthStatus('unauthenticated');
+  }
+
   const isCheckingAuth = authStatus === 'loading';
   const isAuthenticated = authStatus === 'authenticated';
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <Navbar />
+      <Navbar
+        user={user}
+        isCheckingAuth={isCheckingAuth}
+        onLogout={handleLogout}
+      />
 
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <Routes>
