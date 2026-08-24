@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router';
-import { getCurrentUser, isApiConfigured } from './lib/api.ts';
+import {
+  getCurrentUser,
+  isApiConfigured,
+  login,
+  register,
+  type AuthenticatedUser,
+} from './lib/api.ts';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import Home from './pages/Home.tsx';
 import Gallery from './pages/Gallery.tsx';
@@ -15,6 +21,7 @@ function App() {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(
     isApiConfigured ? 'loading' : 'unauthenticated',
   );
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
 
   useEffect(() => {
     if (!isApiConfigured) {
@@ -29,6 +36,21 @@ function App() {
         setAuthStatus('unauthenticated');
       });
   }, []);
+
+  async function handleLogin(email: string, password: string) {
+    const currentUser = await login(email, password);
+
+    setUser(currentUser);
+    setAuthStatus('authenticated');
+  }
+
+  async function handleRegister(
+    username: string,
+    email: string,
+    password: string,
+  ) {
+    await register(username, email, password);
+  }
 
   const isCheckingAuth = authStatus === 'loading';
   const isAuthenticated = authStatus === 'authenticated';
@@ -51,8 +73,11 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route
+            path="/register"
+            element={<Register onRegister={handleRegister} />}
+          />
         </Routes>
       </main>
     </div>
