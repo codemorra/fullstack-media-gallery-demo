@@ -8,7 +8,7 @@ export const isApiConfigured = Boolean(apiBaseUrl);
 
 // This type represents the authenticated user object returned by the backend API.
 export type AuthenticatedUser = {
-  id: string;
+  id: number;
   username: string;
   email: string;
 };
