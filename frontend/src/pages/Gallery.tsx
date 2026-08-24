@@ -1,10 +1,19 @@
+/**
+ * Gallery component that fetches and displays the number of items in the gallery.
+ */
+
 import { useState, useEffect } from 'react';
 import { getGallery } from '../lib/api.ts';
 
+/**
+ * Component that fetches the gallery data and displays the number of items.
+ * If there is an error during the fetch, it displays an error message.
+ */
 function Gallery() {
   const [itemCount, setItemCount] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Fetch the gallery data when the component mounts and update the item count or error message accordingly.
   useEffect(() => {
     void getGallery()
       .then((gallery) => {

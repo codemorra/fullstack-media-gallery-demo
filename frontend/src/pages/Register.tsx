@@ -1,8 +1,13 @@
+/**
+ * Register component that renders a registration form and handles user registration.
+ */
+
 import { useState } from 'react';
 import type * as React from 'react';
 import { Link } from 'react-router';
 import { isApiConfigured } from '../lib/api.ts';
 
+// Define the props for the Register component
 type RegisterProps = {
   onRegister: (
     username: string,
@@ -11,6 +16,9 @@ type RegisterProps = {
   ) => Promise<void>;
 };
 
+/**
+ * Register component that renders a registration form and handles user registration.
+ */
 function Register({ onRegister }: RegisterProps) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -19,6 +27,12 @@ function Register({ onRegister }: RegisterProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Handles the form submission for user registration.
+   * It tries to register the user with the provided username, email, and password.
+   * If the registration is successful, it sets a success message and clears the form fields.
+   * If an error occurs during registration, it sets an appropriate error message.
+   */
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -26,6 +40,7 @@ function Register({ onRegister }: RegisterProps) {
     setErrorMessage(null);
     setSuccessMessage(null);
 
+    // Attempt to register the user with the provided username, email, and password
     try {
       await onRegister(username, email, password);
 
@@ -35,12 +50,14 @@ function Register({ onRegister }: RegisterProps) {
       setEmail('');
       setPassword('');
     } catch (error) {
+      // Set an error message based on the error type
       setErrorMessage(
         error instanceof Error
           ? error.message
           : 'Registrierung fehlgeschlagen.',
       );
     } finally {
+      // Reset the submitting state after the registration attempt
       setIsSubmitting(false);
     }
   }
