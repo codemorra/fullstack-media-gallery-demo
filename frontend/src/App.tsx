@@ -43,7 +43,8 @@ function App() {
 
     // Check the current user and update the authentication status accordingly
     void getCurrentUser()
-      .then(() => {
+      .then((currentUser) => {
+        setUser(currentUser);
         setAuthStatus('authenticated');
       })
       .catch(() => {
