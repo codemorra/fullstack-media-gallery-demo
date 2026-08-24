@@ -29,7 +29,7 @@ function Gallery() {
   return (
     <section>
       <h1 className="text-3xl font-bold">Gallery</h1>
-      <p className="mt-2 text-slate-400">Dein geschützter Galerie-Bereich.</p>
+      <p className="mt-2 text-slate-400">Your protected gallery area.</p>
 
       {errorMessage && (
         <p className="mt-6 rounded-lg border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">

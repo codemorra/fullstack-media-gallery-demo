@@ -44,7 +44,7 @@ function Register({ onRegister }: RegisterProps) {
     try {
       await onRegister(username, email, password);
 
-      setSuccessMessage('Registrierung erfolgreich!');
+      setSuccessMessage('Registration successful!');
 
       setUsername('');
       setEmail('');
@@ -52,9 +52,7 @@ function Register({ onRegister }: RegisterProps) {
     } catch (error) {
       // Set an error message based on the error type
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : 'Registrierung fehlgeschlagen.',
+        error instanceof Error ? error.message : 'Registration failed.',
       );
     } finally {
       // Reset the submitting state after the registration attempt
