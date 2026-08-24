@@ -47,13 +47,11 @@ function Login({ onLogin }: LoginProps) {
   return (
     <section className="mx-auto max-w-md">
       <h1 className="text-3xl font-bold">Login</h1>
-      <p className="mt-2 text-slate-400">
-        Einloggen, um auf die Galerie zuzugreifen.
-      </p>
+      <p className="mt-2 text-slate-400">Log in to access the gallery.</p>
 
       {!isApiConfigured && (
         <p className="mt-6 rounded-lg border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
-          Login nicht möglich ohne lokale Backend Verbindung.
+          Login not possible without a local backend connection.
         </p>
       )}
 

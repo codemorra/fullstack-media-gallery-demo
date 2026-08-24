@@ -30,7 +30,7 @@ function Navbar({ user, isCheckingAuth, onLogout }: NavbarProps) {
       navigate('/');
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : 'Logout fehlgeschlagen.',
+        error instanceof Error ? error.message : 'Logout failed.',
       );
     }
   }
