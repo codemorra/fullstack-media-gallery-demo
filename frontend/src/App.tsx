@@ -18,10 +18,24 @@ import Gallery from './pages/Gallery.tsx';
 import Login from './pages/Login.tsx';
 import Register from './pages/Register.tsx';
 import Navbar from './components/Navbar.tsx';
+import ThemeToggle from './components/ThemeToggle.tsx';
 import './App.css';
 
 // Define the possible authentication statuses for the application
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+type Theme = 'light' | 'dark';
+
+function getInitialTheme(): Theme {
+  const savedTheme = localStorage.getItem('theme');
+
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
 
 /**
  * App component that manages authentication state and routing for the application.
@@ -34,6 +48,13 @@ function App() {
   );
   // State to manage the authenticated user information
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  // Apply the selected color theme to the document and remember manual choices.
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   // Effect hook to check the current authentication status when the component mounts
   useEffect(() => {
@@ -87,22 +108,29 @@ function App() {
     setAuthStatus('unauthenticated');
   }
 
+  function toggleTheme() {
+    setTheme((currentTheme) =>
+      currentTheme === 'dark' ? 'light' : 'dark',
+    );
+  }
+
   // Determine if the application is currently checking the authentication status or if the user is authenticated
   const isCheckingAuth = authStatus === 'loading';
   const isAuthenticated = authStatus === 'authenticated';
   const isStaticPreview = !isApiConfigured;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-50 text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <Navbar
         user={user}
         isCheckingAuth={isCheckingAuth}
         onLogout={handleLogout}
+        themeToggle={<ThemeToggle theme={theme} onToggle={toggleTheme} />}
       />
 
       {isStaticPreview && (
         <div
-          className="border-b border-amber-400/30 bg-amber-400/10 px-6 py-3 text-center text-sm text-amber-200"
+          className="border-b border-amber-300 bg-amber-50 px-6 py-3 text-center text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
           role="status"
         >
           Static frontend preview: authentication and gallery data are

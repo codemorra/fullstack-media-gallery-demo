@@ -28,18 +28,20 @@ function Gallery() {
 
   return (
     <section>
-      <h1 className="text-3xl font-bold">Gallery</h1>
-      <p className="mt-2 text-slate-400">Your protected gallery area.</p>
+      <h1 className="text-3xl font-bold tracking-tight">Gallery</h1>
+      <p className="mt-2 text-slate-500 dark:text-slate-400">
+        Your protected gallery area.
+      </p>
 
       {errorMessage && (
-        <p className="mt-6 rounded-lg border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">
+        <p className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-200">
           {errorMessage}
         </p>
       )}
 
       {itemCount !== null && (
-        <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
-          <p className="text-slate-300">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-slate-700 dark:text-slate-300">
             Gallery items: <span className="font-semibold">{itemCount}</span>
           </p>
         </div>

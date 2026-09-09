@@ -46,23 +46,27 @@ function Login({ onLogin }: LoginProps) {
 
   return (
     <section className="mx-auto max-w-md">
-      <h1 className="text-3xl font-bold">Login</h1>
-      <p className="mt-2 text-slate-400">Log in to access the gallery.</p>
+      <h1 className="text-3xl font-bold tracking-tight">Login</h1>
+      <p className="mt-2 text-slate-500 dark:text-slate-400">
+        Log in to access the gallery.
+      </p>
 
       {!isApiConfigured && (
-        <p className="mt-6 rounded-lg border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
+        <p className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
           Login not possible without a local backend connection.
         </p>
       )}
 
       <form
-        className="mt-8 space-y-5 rounded-xl border border-slate-800 bg-slate-900 p-6"
+        className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
         onSubmit={handleSubmit}
       >
         <label className="block">
-          <span className="text-sm font-medium">Email</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Email
+          </span>
           <input
-            className="mt-2 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 outline-none focus:border-cyan-400"
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-300 dark:focus:ring-cyan-300/20"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -71,9 +75,11 @@ function Login({ onLogin }: LoginProps) {
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium">Password</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Password
+          </span>
           <input
-            className="mt-2 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 outline-none focus:border-cyan-400"
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-300 dark:focus:ring-cyan-300/20"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -81,10 +87,14 @@ function Login({ onLogin }: LoginProps) {
           />
         </label>
 
-        {errorMessage && <p className="text-sm text-red-300">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="text-sm text-red-600 dark:text-red-300">
+            {errorMessage}
+          </p>
+        )}
 
         <button
-          className="w-full rounded-md bg-cyan-400 px-4 py-2 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-cyan-500 px-4 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-400 dark:hover:bg-cyan-300"
           type="submit"
           disabled={!isApiConfigured || isSubmitting}
         >
@@ -92,9 +102,12 @@ function Login({ onLogin }: LoginProps) {
         </button>
       </form>
 
-      <p className="mt-5 text-sm text-slate-400">
+      <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
         No account yet?{' '}
-        <Link className="text-cyan-300 hover:text-cyan-200" to="/register">
+        <Link
+          className="font-medium text-cyan-700 hover:text-cyan-600 dark:text-cyan-300 dark:hover:text-cyan-200"
+          to="/register"
+        >
           Register here
         </Link>
       </p>
