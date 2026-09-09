@@ -2,6 +2,13 @@
 
 A small learning and portfolio project for building a fullstack media gallery. It is intentionally kept simple while I learn and document the individual steps.
 
+## Live preview
+
+[Open the static frontend preview](https://codemorra.github.io/fullstack-media-gallery-demo/)
+
+GitHub Pages hosts only the frontend. Registration, login, logout, and gallery
+data are unavailable because no public backend is deployed.
+
 ## Current status
 
 Work in progress. The current version includes:
