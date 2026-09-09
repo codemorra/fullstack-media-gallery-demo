@@ -22,9 +22,7 @@ function ProtectedRoute({
 }: ProtectedRouteProps) {
   if (isCheckingAuth) {
     return (
-      <p className="text-slate-500 dark:text-slate-400">
-        Checking session …
-      </p>
+      <p className="text-slate-500 dark:text-slate-400">Checking session …</p>
     );
   }
 

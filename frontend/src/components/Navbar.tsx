@@ -18,12 +18,7 @@ type NavbarProps = {
 /**
  * Component that renders the navigation bar with links and user authentication status.
  */
-function Navbar({
-  user,
-  isCheckingAuth,
-  onLogout,
-  themeToggle,
-}: NavbarProps) {
+function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -56,7 +51,10 @@ function Navbar({
         </Link>
 
         <div className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300">
-          <Link className="transition hover:text-cyan-600 dark:hover:text-cyan-300" to="/">
+          <Link
+            className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
+            to="/"
+          >
             Home
           </Link>
           <Link
@@ -67,7 +65,9 @@ function Navbar({
           </Link>
 
           {isCheckingAuth ? (
-            <span className="hidden text-slate-400 sm:inline">Checking session …</span>
+            <span className="hidden text-slate-400 sm:inline">
+              Checking session …
+            </span>
           ) : user ? (
             <>
               <span className="hidden text-slate-500 sm:inline dark:text-slate-400">
