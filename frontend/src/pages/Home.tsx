@@ -1,9 +1,12 @@
 /**
  * Home component that displays the homepage of the Fullstack Media Gallery Demo.
  */
+
+import { Link } from 'react-router';
+
 function Home() {
   return (
-    <div className="grid min-h-[calc(100vh-12rem)] place-items-center">
+    <div className="grid min-h-[calc(100vh-12rem)] place-items-center py-12">
       <section className="max-w-2xl text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700 dark:text-cyan-300">
           Fullstack Learning Project
@@ -15,6 +18,13 @@ function Home() {
           An evolving fullstack media gallery built to explore modern frontend
           and backend development.
         </p>
+        <Link
+          className="mt-9 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          to="/gallery"
+        >
+          Explore the gallery
+          <span aria-hidden="true">→</span>
+        </Link>
       </section>
     </div>
   );

@@ -12,7 +12,6 @@ import {
   register,
   type AuthenticatedUser,
 } from './lib/api.ts';
-import ProtectedRoute from './components/ProtectedRoute.tsx';
 import Home from './pages/Home.tsx';
 import Gallery from './pages/Gallery.tsx';
 import Login from './pages/Login.tsx';
@@ -116,7 +115,6 @@ function App() {
 
   // Determine if the application is currently checking the authentication status or if the user is authenticated
   const isCheckingAuth = authStatus === 'loading';
-  const isAuthenticated = authStatus === 'authenticated';
   const isStaticPreview = !isApiConfigured;
 
   return (
@@ -133,25 +131,15 @@ function App() {
           className="border-b border-amber-300 bg-amber-50 px-6 py-3 text-center text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
           role="status"
         >
-          Static frontend preview: authentication and gallery data are
-          unavailable because no backend is deployed.
+          Static frontend preview: sample images are available, while
+          authentication and future upload features require a backend.
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-6">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route
-            path="/gallery"
-            element={
-              <ProtectedRoute
-                isCheckingAuth={isCheckingAuth}
-                isAuthenticated={isAuthenticated}
-              >
-                <Gallery />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route
             path="/register"

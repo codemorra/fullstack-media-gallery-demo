@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Use Tailwind's dark: utilities with the .dark class controlled by the theme switch. */
 @custom-variant dark (&:where(.dark, .dark *));
