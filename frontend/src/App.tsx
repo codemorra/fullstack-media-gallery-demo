@@ -90,6 +90,7 @@ function App() {
   // Determine if the application is currently checking the authentication status or if the user is authenticated
   const isCheckingAuth = authStatus === 'loading';
   const isAuthenticated = authStatus === 'authenticated';
+  const isStaticPreview = !isApiConfigured;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -98,6 +99,16 @@ function App() {
         isCheckingAuth={isCheckingAuth}
         onLogout={handleLogout}
       />
+
+      {isStaticPreview && (
+        <div
+          className="border-b border-amber-400/30 bg-amber-400/10 px-6 py-3 text-center text-sm text-amber-200"
+          role="status"
+        >
+          Static frontend preview: authentication and gallery data are
+          unavailable because no backend is deployed.
+        </div>
+      )}
 
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <Routes>
