@@ -21,7 +21,11 @@ function ProtectedRoute({
   children,
 }: ProtectedRouteProps) {
   if (isCheckingAuth) {
-    return <p className="text-slate-400">Checking session …</p>;
+    return (
+      <p className="text-slate-500 dark:text-slate-400">
+        Checking session …
+      </p>
+    );
   }
 
   if (!isAuthenticated) {
