@@ -25,7 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import Base, SessionLocal, engine
+from app.database import SessionLocal
 from app.models import User
 from app.security import (
     hash_password,
@@ -63,8 +63,6 @@ app.add_middleware(
     same_site="lax",
     https_only=os.getenv("ENVIRONMENT") == "production",
 )
-
-Base.metadata.create_all(bind=engine)
 
 
 class RegisterData(BaseModel):
