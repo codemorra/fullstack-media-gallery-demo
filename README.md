@@ -6,8 +6,9 @@ A small learning and portfolio project for building a fullstack media gallery. I
 
 [Open the static frontend preview](https://codemorra.github.io/fullstack-media-gallery-demo/)
 
-GitHub Pages hosts only the frontend. Registration, login, logout, and gallery
-data are unavailable because no public backend is deployed.
+GitHub Pages hosts only the static frontend. The public sample gallery is
+available, while registration, login, logout, and future upload features require
+a backend.
 
 ## Current status
 
@@ -16,9 +17,11 @@ Work in progress. The current version includes:
 - a React, TypeScript, Tailwind CSS frontend with React Router
 - a FastAPI backend with SQLite and SQLAlchemy
 - registration, login, logout, and session-based authentication
-- a protected gallery route with placeholder data
+- a public gallery with locally bundled sample images
+- Alembic database migrations for schema changes
 
-Media uploads, image processing, gallery content, and further visual polish are planned for later iterations.
+Media uploads, user-owned gallery content, image processing, and further visual
+polish are planned for later iterations.
 
 ## Run locally
 
@@ -32,10 +35,30 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
+alembic upgrade head
 python -m uvicorn app.main:app --reload
 ```
 
-The API is available at `http://localhost:8000`.
+The API is available at `http://localhost:8000`. Its interactive API
+documentation is available at `http://localhost:8000/docs`.
+
+### Database migrations
+
+Apply all available migrations before starting the backend:
+
+```bash
+cd backend
+source .venv/bin/activate
+alembic upgrade head
+```
+
+After changing SQLAlchemy models, generate and review a migration before
+applying it:
+
+```bash
+alembic revision --autogenerate -m "describe schema change"
+alembic upgrade head
+```
 
 ### Frontend
 
@@ -48,7 +71,9 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The frontend is normally available at `http://localhost:5173`. Register a new demo account, then log in to access the protected gallery route.
+The frontend is normally available at `http://localhost:5173`. The public
+sample gallery works without a backend; run both applications to test
+registration and login locally.
 
 ## License
 
