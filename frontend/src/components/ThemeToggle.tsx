@@ -8,7 +8,12 @@ type ThemeToggleProps = {
 };
 
 /**
- * Component that renders a button to toggle between light and dark themes.
+ * Offers the opposite theme while exposing the current dark-mode state.
+ *
+ * @param props - The active theme and toggle callback.
+ * @param props.theme - The color theme currently applied by App.
+ * @param props.onToggle - Switches the theme in App.
+ * @returns A labelled theme button with a sun or moon icon.
  */
 function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
   const isDarkTheme = theme === 'dark';

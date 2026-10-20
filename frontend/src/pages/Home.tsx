@@ -4,6 +4,11 @@
 
 import { Link } from 'react-router';
 
+/**
+ * Introduces the learning project and links to the gallery and source code.
+ *
+ * @returns The public landing page in the active light/dark theme.
+ */
 function Home() {
   return (
     <div className="grid min-h-[65vh] place-items-center py-12 sm:py-16">

@@ -38,8 +38,12 @@ type ApiErrorResponse = {
 };
 
 /**
- * Makes an API request to the specified path with the given options.
- * Throws an error if the request fails or the backend is not reachable.
+ * Sends session cookies, preserves multipart boundaries, and normalizes API errors.
+ *
+ * @param path - The endpoint path relative to the configured API base URL.
+ * @param options - Fetch options, including an optional JSON or FormData body.
+ * @returns The parsed JSON response, or undefined for a 204 response.
+ * @throws {Error} If configuration is missing or the request fails.
  */
 async function apiRequest<T>(
   path: string,
@@ -96,6 +100,9 @@ async function apiRequest<T>(
 
 /**
  * Retrieves the currently authenticated user from the backend API.
+ *
+ * @returns The user identified by the session cookie.
+ * @throws {Error} If no valid session exists or the request fails.
  */
 export function getCurrentUser(): Promise<AuthenticatedUser> {
   return apiRequest<AuthenticatedUser>('/api/auth/me');
@@ -103,7 +110,11 @@ export function getCurrentUser(): Promise<AuthenticatedUser> {
 
 /**
  * Logs in a user with the provided email and password.
- * Returns the authenticated user object on success.
+ *
+ * @param email - The account email address.
+ * @param password - The password to verify on the backend.
+ * @returns The authenticated user after the session cookie is set.
+ * @throws {Error} If credentials are invalid or the request fails.
  */
 export function login(
   email: string,
@@ -117,6 +128,9 @@ export function login(
 
 /**
  * Logs out the currently authenticated user.
+ *
+ * @returns A promise that resolves after the backend clears the session.
+ * @throws {Error} If the request fails.
  */
 export function logout(): Promise<void> {
   return apiRequest<void>('/api/auth/logout', {
@@ -126,7 +140,12 @@ export function logout(): Promise<void> {
 
 /**
  * Registers a new user with the provided username, email, and password.
- * Returns the authenticated user object on success.
+ *
+ * @param username - The public name displayed beside uploaded images.
+ * @param email - The account email address.
+ * @param password - The password to hash on the backend.
+ * @returns The created account; registration does not sign the user in.
+ * @throws {Error} If registration is rejected or the request fails.
  */
 export function register(
   username: string,

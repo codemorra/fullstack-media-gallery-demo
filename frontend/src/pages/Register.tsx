@@ -1,5 +1,5 @@
 /**
- * Register component that renders a registration form and handles user registration.
+ * Account registration page using the shared form and feedback styles.
  */
 
 import { useState } from 'react';
@@ -17,7 +17,11 @@ type RegisterProps = {
 };
 
 /**
- * Register component that renders a registration form and handles user registration.
+ * Creates an account and offers a link to sign in after registration.
+ *
+ * @param props - The registration action supplied by App.
+ * @param props.onRegister - Sends account details to the backend.
+ * @returns The registration form with success and error feedback.
  */
 function Register({ onRegister }: RegisterProps) {
   const [username, setUsername] = useState('');
@@ -28,10 +32,10 @@ function Register({ onRegister }: RegisterProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
-   * Handles the form submission for user registration.
-   * It tries to register the user with the provided username, email, and password.
-   * If the registration is successful, it sets a success message and clears the form fields.
-   * If an error occurs during registration, it sets an appropriate error message.
+   * Clears the form after registration or displays the returned error.
+   *
+   * @param event - The form submission event whose navigation is prevented.
+   * @returns A promise that resolves after the registration attempt.
    */
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();

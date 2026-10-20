@@ -3,8 +3,9 @@ Database setup for the media gallery application.
 """
 
 from pathlib import Path
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # Define the path to the SQLite database file
 DATABASE_FILE = Path(__file__).resolve().parent.parent / "media_gallery.db"
@@ -16,4 +17,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
+    """Shared model metadata used by SQLAlchemy and Alembic migrations."""
+
     pass

@@ -12,7 +12,11 @@ type LoginProps = {
 };
 
 /**
- * Login component that renders a login form and handles user authentication.
+ * Renders the shared-styled sign-in form with pending and error feedback.
+ *
+ * @param props - The login action supplied by App.
+ * @param props.onLogin - Authenticates the user and updates application state.
+ * @returns The sign-in form and a registration link.
  */
 function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate();
@@ -22,10 +26,10 @@ function Login({ onLogin }: LoginProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
-   * Handles the form submission for user login.
-   * It sets the submitting state, and attempts to log in the user with the provided email and password.
-   * If the login is successful, it navigates to the user's personal gallery.
-   * If an error occurs during login, it sets an appropriate error message.
+   * Opens My images after login, keeping failures visible in the form.
+   *
+   * @param event - The form submission event whose navigation is prevented.
+   * @returns A promise that resolves after the login attempt.
    */
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -26,7 +26,14 @@ function navigationClass({ isActive }: { isActive: boolean }): string {
 }
 
 /**
- * Component that renders the navigation bar with links and user authentication status.
+ * Shares route links between desktop navigation and the collapsible mobile menu.
+ *
+ * @param props - The current session and shared navigation actions.
+ * @param props.user - The signed-in user, or null for a visitor.
+ * @param props.isCheckingAuth - Hides account links while the session is checked.
+ * @param props.onLogout - Clears the backend session and application auth state.
+ * @param props.themeToggle - The shared light/dark theme control.
+ * @returns Responsive navigation with active links and logout error feedback.
  */
 function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
   const navigate = useNavigate();
@@ -46,7 +53,11 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
           ]),
   ];
 
-  // Handle user logout.
+  /**
+   * Returns to Home after logout, or displays an error without leaving the page.
+   *
+   * @returns A promise that resolves after the logout attempt.
+   */
   async function handleLogout() {
     setErrorMessage(null);
 
