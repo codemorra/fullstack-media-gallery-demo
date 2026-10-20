@@ -13,7 +13,14 @@ type ProtectedRouteProps = {
 };
 
 /**
- * Component that renders its children only if the user is authenticated.
+ * Waits for session restoration before rendering content or redirecting to login.
+ * Backend endpoints enforce access independently of this navigation guard.
+ *
+ * @param props - The authentication state and protected page.
+ * @param props.isCheckingAuth - Whether the initial session check is pending.
+ * @param props.isAuthenticated - Whether a valid session has been confirmed.
+ * @param props.children - The protected page to render.
+ * @returns A loading message, login redirect, or the protected content.
  */
 function ProtectedRoute({
   isCheckingAuth,

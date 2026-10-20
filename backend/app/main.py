@@ -112,7 +112,7 @@ class UserResponse(BaseModel):
 
 
 class MediaResponse(BaseModel):
-    """Response model for a gallery item without private user details."""
+    """Gallery metadata including the uploader's username, excluding credentials."""
 
     id: int
     title: str
@@ -142,7 +142,12 @@ class MediaUpdateData(BaseModel):
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependency that provides a database session for each request."""
+    """Provide a request-scoped database session and always close it afterward.
+
+    Yields:
+        The session used by this request's dependencies and endpoint.
+        Write endpoints are responsible for committing or rolling back changes.
+    """
     db = SessionLocal()
     try:
         yield db
@@ -151,7 +156,19 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_current_user(request: Request, db: Annotated[Session, Depends(get_db)]) -> User:
-    """Dependency that retrieves the currently authenticated user based on the session."""
+    """Resolve the signed-in user from the session cookie.
+
+    Args:
+        request: The incoming request containing the session.
+        db: The database session provided for this request.
+
+    Returns:
+        The user identified by the stored session user ID.
+
+    Raises:
+        HTTPException: With status 401 if the session has no user ID or the
+            account no longer exists. A stale session is cleared.
+    """
     user_id = request.session.get("user_id")
 
     # Validate that the user is authenticated
@@ -227,8 +244,18 @@ def health() -> dict[str, str]:
     tags=["Authentication"],
 )
 def register_user(data: RegisterData, db: Annotated[Session, Depends(get_db)]) -> User:
-    """Endpoint to register a new user. Validates the input data, checks for existing users,
-    hashes the password, and creates a new user in the database."""
+    """Create an account with a hashed password.
+
+    Args:
+        data: The validated username, email, and password.
+        db: The database session provided for this request.
+
+    Returns:
+        The new user, serialized through UserResponse to exclude the hash.
+
+    Raises:
+        HTTPException: With status 409 if the email is already registered.
+    """
     email = str(data.email).lower()
 
     # Check if a user with the same email already exists
@@ -261,12 +288,23 @@ def register_user(data: RegisterData, db: Annotated[Session, Depends(get_db)]) -
 def login_user(
     data: LoginData, request: Request, db: Annotated[Session, Depends(get_db)]
 ) -> User:
-    """Endpoint to log in a user. Validates the input data, checks the credentials,
-    and sets the user ID in the session if successful."""
+    """Verify credentials and store the authenticated user ID in the session.
+
+    Args:
+        data: The validated login email and password.
+        request: The request whose session receives the authenticated user ID.
+        db: The database session provided for this request.
+
+    Returns:
+        The signed-in user, serialized through UserResponse.
+
+    Raises:
+        HTTPException: With status 401 for an unknown email or incorrect password.
+    """
     email = str(data.email).lower()
     user = db.scalar(select(User).where(User.email == email))
 
-    # If the user does not exist or the password is incorrect, raise an HTTP 401 error
+    # Verify a dummy hash for unknown accounts to reduce login timing differences.
     if user is None:
         verify_password(data.password, DUMMY_PASSWORD_HASH)
 
@@ -286,7 +324,14 @@ def login_user(
     tags=["Authentication"],
 )
 def logout_user(request: Request) -> Response:
-    """Endpoint to log out the current user by clearing the session."""
+    """Clear the session, including when the visitor is already signed out.
+
+    Args:
+        request: The request containing the session to clear.
+
+    Returns:
+        An empty 204 response.
+    """
     request.session.clear()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -299,7 +344,17 @@ def logout_user(request: Request) -> Response:
     tags=["Authentication"],
 )
 def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]) -> User:
-    """Endpoint to retrieve the currently authenticated user's information."""
+    """Return the session user so the frontend can restore its sign-in state.
+
+    Args:
+        current_user: The account resolved by the authentication dependency.
+
+    Returns:
+        The signed-in user, serialized through UserResponse.
+
+    Raises:
+        HTTPException: With status 401 when the session is invalid.
+    """
     return current_user
 
 
@@ -314,7 +369,7 @@ def get_gallery(db: Annotated[Session, Depends(get_db)]) -> GalleryResponse:
         Public gallery items ordered by creation time, newest first.
         Items created at the same time are ordered by descending ID.
     """
-    # Filter in the database so private records never enter the public response.
+    # Filter private records and load uploader names in the same query.
     items = db.scalars(
         select(Media)
         .options(joinedload(Media.owner))

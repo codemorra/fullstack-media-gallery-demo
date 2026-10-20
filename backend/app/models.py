@@ -1,5 +1,4 @@
-"""
-This module defines the SQLAlchemy models for the application."""
+"""SQLAlchemy account and media models managed through Alembic migrations."""
 
 from datetime import datetime
 
@@ -10,7 +9,7 @@ from app.database import Base
 
 
 class User(Base):
-    """User model representing a user in the system."""
+    """Account with a public username, private credentials, and owned media."""
 
     __tablename__ = "users"
 
@@ -23,7 +22,7 @@ class User(Base):
 
 
 class Media(Base):
-    """Media model representing an image owned by a user."""
+    """Image metadata with ownership and visibility; file contents live in storage."""
 
     __tablename__ = "media"
     __table_args__ = (

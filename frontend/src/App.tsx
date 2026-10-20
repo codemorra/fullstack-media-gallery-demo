@@ -25,6 +25,11 @@ import './App.css';
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type Theme = 'light' | 'dark';
 
+/**
+ * Uses the stored theme preference, falling back to the browser's color scheme.
+ *
+ * @returns The theme to apply before the first paint.
+ */
 function getInitialTheme(): Theme {
   const savedTheme = localStorage.getItem('theme');
 
@@ -38,8 +43,9 @@ function getInitialTheme(): Theme {
 }
 
 /**
- * App component that manages authentication state and routing for the application.
- * It checks the current authentication status on mount and provides handlers for login, registration, and logout.
+ * Composes the shared layout, restores the session, and manages the color theme.
+ *
+ * @returns Public routes, the protected personal gallery, and shared navigation.
  */
 function App() {
   // State to manage the current authentication status and the authenticated user
@@ -74,9 +80,12 @@ function App() {
   }, []);
 
   /**
-   * Handles the login process for the user.
-   * It calls the login API with the provided email and password, updates the user state,
-   * and sets the authentication status to 'authenticated'.
+   * Signs in and updates the session state used by navigation and protected routes.
+   *
+   * @param email - The account email address.
+   * @param password - The password to verify on the backend.
+   * @returns A promise that resolves after the session state is updated.
+   * @throws {Error} If authentication or the API request fails.
    */
   async function handleLogin(email: string, password: string) {
     const currentUser = await login(email, password);
@@ -86,8 +95,13 @@ function App() {
   }
 
   /**
-   * Handles the registration process for a new user.
-   * It calls the register API with the provided username, email, and password.
+   * Creates an account; signing in is a separate action.
+   *
+   * @param username - The public username used for uploader attribution.
+   * @param email - The account email address.
+   * @param password - The password to hash on the backend.
+   * @returns A promise that resolves after registration.
+   * @throws {Error} If validation or the API request fails.
    */
   async function handleRegister(
     username: string,
@@ -98,8 +112,10 @@ function App() {
   }
 
   /**
-   * Handles the logout process for the user.
-   * It calls the logout API, clears the user state, and sets the authentication status to 'unauthenticated'.
+   * Clears local authentication state after the backend confirms logout.
+   *
+   * @returns A promise that resolves after logout.
+   * @throws {Error} If the API request fails; the current local state is retained.
    */
   async function handleLogout() {
     await logout();
@@ -108,6 +124,7 @@ function App() {
     setAuthStatus('unauthenticated');
   }
 
+  /** Switches the color theme; the layout effect applies and stores the choice. */
   function toggleTheme() {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
   }

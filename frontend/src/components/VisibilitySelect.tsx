@@ -18,6 +18,8 @@ const options = [
 
 /**
  * Renders a styled select-only combobox with keyboard navigation.
+ * Focus stays on the trigger while aria-activedescendant identifies the option.
+ * Escape cancels the choice; Enter, Space, or Tab confirms it.
  *
  * @param props - The controlled visibility field settings.
  * @param props.value - The currently selected visibility.

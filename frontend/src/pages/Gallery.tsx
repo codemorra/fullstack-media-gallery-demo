@@ -16,7 +16,7 @@ import Modal from '../components/Modal.tsx';
 import MediaAttribution from '../components/MediaAttribution.tsx';
 import SampleCopyright from '../components/SampleCopyright.tsx';
 
-// Both data sources provide the same fields needed by the image cards.
+// Static samples share the card fields but have no assigned uploader.
 type GalleryCard = Pick<
   GalleryItem,
   'id' | 'title' | 'file_path' | 'visibility'
@@ -41,7 +41,8 @@ const sampleGalleryItems: GalleryCard[] = [
 }));
 
 /**
- * Displays the selected collection using shared image cards and loading states.
+ * Displays public or personal image cards and an enlarged image dialog.
+ * Personal galleries also provide upload, editing, and deletion dialogs.
  *
  * @param props - The gallery view settings.
  * @param props.personal - Whether to load only the authenticated user's images.
