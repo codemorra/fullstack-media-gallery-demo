@@ -21,7 +21,7 @@ from typing import Annotated, Literal
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -34,6 +34,7 @@ from app.security import (
     hash_password,
     verify_password,
 )
+from app.storage import get_media_file_path
 
 # Load environment variables from .env file
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -276,3 +277,50 @@ def get_my_gallery(
     ).all()
 
     return GalleryResponse(items=[MediaResponse.model_validate(item) for item in items])
+
+
+@app.get("/api/media/{media_id}/file", response_class=FileResponse, tags=["Media"])
+def get_media_file(
+    media_id: int,
+    request: Request,
+    db: Annotated[Session, Depends(get_db)],
+) -> FileResponse:
+    """Serve an image after checking its visibility and ownership.
+
+    Args:
+        media_id: The ID of the requested media record.
+        request: The incoming request containing the session cookie.
+        db: The database session provided for this request.
+
+    Returns:
+        The image file with browser caching disabled.
+
+    Raises:
+        HTTPException: With status 401 if a private image is requested without
+            a valid session, or 404 if the record or file is unavailable or
+            belongs to another user and is private.
+    """
+    media = db.get(Media, media_id)
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    if media.visibility != "public":
+        current_user = get_current_user(request, db)
+        if media.owner_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    # Check access before resolving a filename; never accept a file path from the URL.
+    try:
+        image_path = get_media_file_path(media.file_path)
+    except (ValueError, FileNotFoundError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Image not found"
+        ) from error
+
+    return FileResponse(
+        image_path,
+        headers={
+            "Cache-Control": "no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
