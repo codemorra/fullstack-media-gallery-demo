@@ -11,6 +11,7 @@ import {
   type GalleryItem,
 } from '../lib/api.ts';
 import UploadForm from '../components/UploadForm.tsx';
+import MediaActions from '../components/MediaActions.tsx';
 
 // Both data sources provide the same fields needed by the image cards.
 type GalleryCard = Pick<
@@ -49,6 +50,7 @@ function Gallery({ personal = false }: GalleryProps) {
   );
   const [isLoading, setIsLoading] = useState(isApiConfigured);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isApiConfigured) {
@@ -90,7 +92,30 @@ function Gallery({ personal = false }: GalleryProps) {
    * @param item - The new media record returned by the upload endpoint.
    */
   function handleUploaded(item: GalleryItem) {
+    setActionMessage(null);
     setGalleryItems((items) => [item, ...items]);
+  }
+
+  /**
+   * Replaces the image metadata after a successful update.
+   *
+   * @param item - The updated media record returned by the backend.
+   */
+  function handleUpdated(item: GalleryItem) {
+    setGalleryItems((items) =>
+      items.map((current) => (current.id === item.id ? item : current)),
+    );
+    setActionMessage('Image updated.');
+  }
+
+  /**
+   * Removes a deleted image from the displayed collection.
+   *
+   * @param mediaId - The ID of the image whose deletion was confirmed by the backend.
+   */
+  function handleDeleted(mediaId: number) {
+    setGalleryItems((items) => items.filter((item) => item.id !== mediaId));
+    setActionMessage('Image deleted.');
   }
 
   return (
@@ -143,6 +168,15 @@ function Gallery({ personal = false }: GalleryProps) {
         <UploadForm onUploaded={handleUploaded} />
       )}
 
+      {actionMessage && (
+        <p
+          className="mt-6 text-sm text-emerald-700 dark:text-emerald-300"
+          role="status"
+        >
+          {actionMessage}
+        </p>
+      )}
+
       {!isLoading && !errorMessage && galleryItems.length === 0 && (
         <p className="mt-8 text-slate-500 dark:text-slate-400" role="status">
           {personal ? 'You have no images yet.' : 'No public images yet.'}
@@ -169,24 +203,33 @@ function Gallery({ personal = false }: GalleryProps) {
                 }
               />
             </div>
-            <figcaption className="flex items-center justify-between px-4 py-3 text-sm">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className="font-medium text-slate-700 dark:text-slate-200">
-                  {item.title}
-                </span>
-                {personal && (
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    {item.visibility === 'private' ? 'Private' : 'Public'}
+            <figcaption className="px-4 py-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <span className="font-medium text-slate-700 dark:text-slate-200">
+                    {item.title}
                   </span>
-                )}
+                  {personal && (
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {item.visibility === 'private' ? 'Private' : 'Public'}
+                    </span>
+                  )}
+                </div>
+                <span className="text-slate-400 dark:text-slate-500">
+                  {sampleGalleryItems.some(
+                    (sample) => sample.file_path === item.file_path,
+                  )
+                    ? '© Christopher Kranz'
+                    : 'Uploaded image'}
+                </span>
               </div>
-              <span className="text-slate-400 dark:text-slate-500">
-                {sampleGalleryItems.some(
-                  (sample) => sample.file_path === item.file_path,
-                )
-                  ? '© Christopher Kranz'
-                  : 'Uploaded image'}
-              </span>
+              {personal && (
+                <MediaActions
+                  item={item}
+                  onUpdated={handleUpdated}
+                  onDeleted={handleDeleted}
+                />
+              )}
             </figcaption>
           </figure>
         ))}
