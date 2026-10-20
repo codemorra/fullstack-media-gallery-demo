@@ -19,7 +19,16 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -34,7 +43,12 @@ from app.security import (
     hash_password,
     verify_password,
 )
-from app.storage import get_media_file_path
+from app.storage import (
+    MAX_UPLOAD_BYTES,
+    ImageTooLargeError,
+    get_media_file_path,
+    save_uploaded_image,
+)
 
 # Load environment variables from .env file
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -277,6 +291,78 @@ def get_my_gallery(
     ).all()
 
     return GalleryResponse(items=[MediaResponse.model_validate(item) for item in items])
+
+
+@app.post(
+    "/api/media",
+    response_model=MediaResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Media"],
+)
+def upload_media(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    title: Annotated[str, Form(min_length=1, max_length=100)],
+    file: Annotated[UploadFile, File()],
+) -> MediaResponse:
+    """Upload an image and create a private media record for the current user.
+
+    Args:
+        request: The incoming request used to verify the browser's origin.
+        current_user: The user identified by the validated session.
+        db: The database session provided for this request.
+        title: A descriptive title containing 1-100 characters.
+        file: A JPEG, PNG, or WebP image sent as multipart form data.
+
+    Returns:
+        The newly created private media record.
+
+    Raises:
+        HTTPException: With status 400 for invalid images, 401 for an invalid
+            session, 403 for an untrusted browser origin, 413 for an oversized
+            image, or 422 for invalid form fields.
+    """
+    # Multipart forms can be submitted across origins even when CORS blocks reading responses.
+    origin = request.headers.get("origin")
+    if origin is not None and origin not in (frontend_origin, str(request.base_url).rstrip("/")):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Untrusted request origin")
+
+    title = title.strip()
+    if not title:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="The title must not be blank."
+        )
+
+    # Read at most one byte beyond the limit instead of loading an unbounded file.
+    contents = file.file.read(MAX_UPLOAD_BYTES + 1)
+    try:
+        image_path = save_uploaded_image(contents)
+    except ImageTooLargeError as error:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail=str(error)
+        ) from error
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+
+    media = Media(
+        title=title,
+        file_path=image_path.name,
+        owner_id=current_user.id,
+        visibility="private",
+    )
+    try:
+        db.add(media)
+        db.flush()
+        response = MediaResponse.model_validate(media)
+        db.commit()
+    except Exception:
+        # Keep storage and database consistent when saving the record fails.
+        db.rollback()
+        image_path.unlink(missing_ok=True)
+        raise
+
+    return response
 
 
 @app.get("/api/media/{media_id}/file", response_class=FileResponse, tags=["Media"])
