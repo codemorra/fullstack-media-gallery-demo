@@ -60,6 +60,25 @@ alembic revision --autogenerate -m "describe schema change"
 alembic upgrade head
 ```
 
+### Local demo data
+
+After applying the migrations, run this command from `backend/` with the
+virtual environment activated:
+
+```bash
+python -m app.seed
+```
+
+The script prompts for a password (10-128 characters) for newly created demo
+accounts: `demo.alex@example.com` and `demo.sam@example.com`. It creates six
+media records referencing the existing sample images, four public and two
+private. Running it again adds missing records without resetting passwords
+or overwriting existing media.
+
+Visibility currently applies only to database records. The sample image files
+in `frontend/public/` remain public, and the frontend still shows its static
+collection independently of the database.
+
 ### Frontend
 
 In a second terminal, create the local frontend configuration and start Vite:
