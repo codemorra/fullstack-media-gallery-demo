@@ -2,7 +2,7 @@
  * This file contains functions for interacting with the backend API.
  */
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '');
 
 export const isApiConfigured = Boolean(apiBaseUrl);
 
@@ -29,7 +29,7 @@ export type GalleryResponse = {
 
 // This type represents the error response returned by the backend API.
 type ApiErrorResponse = {
-  detail?: string;
+  detail?: string | { msg: string }[];
 };
 
 /**
@@ -47,16 +47,23 @@ async function apiRequest<T>(
   }
 
   let response: Response;
+  const headers = new Headers(options.headers);
+
+  // FormData needs the browser-generated Content-Type, including its multipart boundary.
+  if (
+    options.body &&
+    !(options.body instanceof FormData) &&
+    !headers.has('Content-Type')
+  ) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   // Attempt to make the API request and handle network errors.
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
       ...options,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
   } catch {
     throw new Error('Backend is not reachable.');
@@ -67,7 +74,11 @@ async function apiRequest<T>(
     const error = (await response
       .json()
       .catch(() => null)) as ApiErrorResponse | null;
-    throw new Error(error?.detail || 'The request failed.');
+    const detail = error?.detail;
+    const message = Array.isArray(detail)
+      ? detail.map((issue) => issue.msg).join(' ')
+      : detail;
+    throw new Error(message || 'The request failed.');
   }
 
   // If the response status is 204 (No Content), return undefined.
@@ -141,4 +152,38 @@ export function getGallery(): Promise<GalleryResponse> {
  */
 export function getMyGallery(): Promise<GalleryResponse> {
   return apiRequest<GalleryResponse>('/api/gallery/mine');
+}
+
+/**
+ * Uploads an image as a private media record for the signed-in user.
+ *
+ * @param title - The descriptive title of the image.
+ * @param file - The JPEG, PNG, or WebP file to upload.
+ * @returns The newly created private media record.
+ * @throws {Error} If validation, authentication, or the upload fails.
+ */
+export function uploadImage(title: string, file: File): Promise<GalleryItem> {
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file', file);
+
+  return apiRequest<GalleryItem>('/api/media', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+/**
+ * Builds the URL of an image served through the backend's access checks.
+ *
+ * @param mediaId - The ID of the requested media record.
+ * @returns The absolute URL of the image endpoint.
+ * @throws {Error} If the API base URL is not configured.
+ */
+export function getMediaFileUrl(mediaId: number): string {
+  if (!apiBaseUrl) {
+    throw new Error('API base URL is not configured.');
+  }
+
+  return `${apiBaseUrl}/api/media/${mediaId}/file`;
 }
