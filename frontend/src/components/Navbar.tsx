@@ -39,7 +39,7 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
 
   return (
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
+      <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
         <Link
           className="font-semibold tracking-tight text-slate-950 dark:text-white"
           to="/"
@@ -50,7 +50,7 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
           </span>
         </Link>
 
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300">
           <Link
             className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
             to="/"
@@ -70,6 +70,12 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
             </span>
           ) : user ? (
             <>
+              <Link
+                className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
+                to="/my-gallery"
+              >
+                My images
+              </Link>
               <span className="hidden text-slate-500 sm:inline dark:text-slate-400">
                 {user.username}
               </span>

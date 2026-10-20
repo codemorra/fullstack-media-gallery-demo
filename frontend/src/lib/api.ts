@@ -13,12 +13,13 @@ export type AuthenticatedUser = {
   email: string;
 };
 
-// These types match the public gallery response models in the backend.
+// These types match the gallery response models in the backend.
 export type GalleryItem = {
   id: number;
   title: string;
   file_path: string;
   owner_id: number;
+  visibility: 'public' | 'private';
   created_at: string;
 };
 
@@ -130,4 +131,14 @@ export function register(
  */
 export function getGallery(): Promise<GalleryResponse> {
   return apiRequest<GalleryResponse>('/api/gallery');
+}
+
+/**
+ * Retrieves the signed-in user's public and private gallery items.
+ *
+ * @returns The media records owned by the authenticated user.
+ * @throws {Error} If the session is invalid or the request fails.
+ */
+export function getMyGallery(): Promise<GalleryResponse> {
+  return apiRequest<GalleryResponse>('/api/gallery/mine');
 }

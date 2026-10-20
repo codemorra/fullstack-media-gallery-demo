@@ -16,7 +16,7 @@ import os
 from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -93,19 +93,20 @@ class UserResponse(BaseModel):
 
 
 class MediaResponse(BaseModel):
-    """Response model for a public gallery item without private user details."""
+    """Response model for a gallery item without private user details."""
 
     id: int
     title: str
     file_path: str
     owner_id: int
+    visibility: Literal["public", "private"]
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class GalleryResponse(BaseModel):
-    """Response model containing the public gallery items."""
+    """Response model containing the requested gallery items."""
 
     items: list[MediaResponse]
 
@@ -243,6 +244,34 @@ def get_gallery(db: Annotated[Session, Depends(get_db)]) -> GalleryResponse:
     items = db.scalars(
         select(Media)
         .where(Media.visibility == "public")
+        .order_by(Media.created_at.desc(), Media.id.desc())
+    ).all()
+
+    return GalleryResponse(items=[MediaResponse.model_validate(item) for item in items])
+
+
+@app.get("/api/gallery/mine", response_model=GalleryResponse, tags=["Gallery"])
+def get_my_gallery(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> GalleryResponse:
+    """Return the authenticated user's public and private media records.
+
+    Args:
+        current_user: The user identified by the validated session.
+        db: The database session provided for this request.
+
+    Returns:
+        The user's media ordered by creation time and ID, newest first.
+
+    Raises:
+        HTTPException: With status 401 if the authentication dependency rejects
+            the session.
+    """
+    # Determine ownership from the session rather than a client-supplied user ID.
+    items = db.scalars(
+        select(Media)
+        .where(Media.owner_id == current_user.id)
         .order_by(Media.created_at.desc(), Media.id.desc())
     ).all()
 

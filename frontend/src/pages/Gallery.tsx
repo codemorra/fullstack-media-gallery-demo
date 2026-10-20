@@ -1,12 +1,21 @@
 /**
- * Gallery component that displays public API records or static preview samples.
+ * Gallery component for public images, personal images, and static preview samples.
  */
 
 import { useEffect, useState } from 'react';
-import { getGallery, isApiConfigured, type GalleryItem } from '../lib/api.ts';
+import {
+  getGallery,
+  getMyGallery,
+  isApiConfigured,
+  type GalleryItem,
+} from '../lib/api.ts';
 
 // Both data sources provide the same fields needed by the image cards.
-type GalleryCard = Pick<GalleryItem, 'id' | 'title' | 'file_path'>;
+type GalleryCard = Pick<GalleryItem, 'id' | 'title' | 'file_path' | 'visibility'>;
+
+type GalleryProps = {
+  personal?: boolean;
+};
 
 const sampleGalleryItems: GalleryCard[] = [
   'sample_001.webp',
@@ -19,11 +28,19 @@ const sampleGalleryItems: GalleryCard[] = [
   id: index + 1,
   title: `Sample ${String(index + 1).padStart(2, '0')}`,
   file_path: filePath,
+  visibility: 'public',
 }));
 
-function Gallery() {
+/**
+ * Displays the selected collection using shared image cards and loading states.
+ *
+ * @param props - The gallery view settings.
+ * @param props.personal - Whether to load only the authenticated user's images.
+ * @returns The selected gallery and its loading, error, or empty state.
+ */
+function Gallery({ personal = false }: GalleryProps) {
   const [galleryItems, setGalleryItems] = useState<GalleryCard[]>(
-    isApiConfigured ? [] : sampleGalleryItems,
+    isApiConfigured || personal ? [] : sampleGalleryItems,
   );
   const [isLoading, setIsLoading] = useState(isApiConfigured);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -36,7 +53,9 @@ function Gallery() {
     // Ignore responses after leaving the page, including StrictMode's cleanup.
     let isActive = true;
 
-    void getGallery()
+    const loadGallery = personal ? getMyGallery : getGallery;
+
+    void loadGallery()
       .then((gallery) => {
         if (isActive) {
           setGalleryItems(gallery.items);
@@ -58,22 +77,28 @@ function Gallery() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [personal]);
 
   return (
     <section className="py-4 sm:py-8">
       <div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-8 dark:border-slate-800 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700 dark:text-cyan-300">
-            {isApiConfigured ? 'Public collection' : 'Sample collection'}
+            {personal
+              ? 'Your collection'
+              : isApiConfigured
+                ? 'Public collection'
+                : 'Sample collection'}
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Gallery
+            {personal ? 'My images' : 'Gallery'}
           </h1>
           <p className="mt-3 max-w-xl text-slate-600 dark:text-slate-400">
-            {isApiConfigured
-              ? 'Explore the publicly shared images in this gallery.'
-              : 'Local sample images used to establish the visual direction of the project.'}
+            {personal
+              ? 'Your public and private images, all in one place.'
+              : isApiConfigured
+                ? 'Explore the publicly shared images in this gallery.'
+                : 'Local sample images used to establish the visual direction of the project.'}
           </p>
         </div>
 
@@ -102,7 +127,7 @@ function Gallery() {
 
       {!isLoading && !errorMessage && galleryItems.length === 0 && (
         <p className="mt-8 text-slate-500 dark:text-slate-400" role="status">
-          No public images yet.
+          {personal ? 'You have no images yet.' : 'No public images yet.'}
         </p>
       )}
 
@@ -122,9 +147,16 @@ function Gallery() {
               />
             </div>
             <figcaption className="flex items-center justify-between px-4 py-3 text-sm">
-              <span className="font-medium text-slate-700 dark:text-slate-200">
-                {item.title}
-              </span>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="font-medium text-slate-700 dark:text-slate-200">
+                  {item.title}
+                </span>
+                {personal && (
+                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {item.visibility === 'private' ? 'Private' : 'Public'}
+                  </span>
+                )}
+              </div>
               <span className="text-slate-400 dark:text-slate-500">
                 © Christopher Kranz
               </span>

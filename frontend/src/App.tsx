@@ -18,6 +18,7 @@ import Login from './pages/Login.tsx';
 import Register from './pages/Register.tsx';
 import Navbar from './components/Navbar.tsx';
 import ThemeToggle from './components/ThemeToggle.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
 import './App.css';
 
 // Define the possible authentication statuses for the application
@@ -139,7 +140,18 @@ function App() {
       <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-6">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/gallery" element={<Gallery key="public" />} />
+          <Route
+            path="/my-gallery"
+            element={
+              <ProtectedRoute
+                isCheckingAuth={isCheckingAuth}
+                isAuthenticated={authStatus === 'authenticated'}
+              >
+                <Gallery key={user?.id} personal />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route
             path="/register"

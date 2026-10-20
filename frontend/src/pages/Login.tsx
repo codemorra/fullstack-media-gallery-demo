@@ -24,7 +24,7 @@ function Login({ onLogin }: LoginProps) {
   /**
    * Handles the form submission for user login.
    * It sets the submitting state, and attempts to log in the user with the provided email and password.
-   * If the login is successful, it navigates to the gallery page.
+   * If the login is successful, it navigates to the user's personal gallery.
    * If an error occurs during login, it sets an appropriate error message.
    */
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -36,7 +36,7 @@ function Login({ onLogin }: LoginProps) {
     // Attempt to log in the user with the provided email and password
     try {
       await onLogin(email, password);
-      navigate('/gallery', { replace: true });
+      navigate('/my-gallery', { replace: true });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Login failed.');
     } finally {
@@ -48,7 +48,7 @@ function Login({ onLogin }: LoginProps) {
     <section className="mx-auto max-w-md">
       <h1 className="text-3xl font-bold tracking-tight">Login</h1>
       <p className="mt-2 text-slate-500 dark:text-slate-400">
-        Log in to access the gallery.
+        Log in to view your own images.
       </p>
 
       {!isApiConfigured && (
