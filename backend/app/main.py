@@ -12,6 +12,7 @@ FRONTEND_ORIGIN to be set in the .env file for session management
 and CORS.
 """
 
+import logging
 import os
 from collections.abc import Generator
 from datetime import datetime
@@ -45,10 +46,13 @@ from app.security import (
 )
 from app.storage import (
     MAX_UPLOAD_BYTES,
+    SAMPLE_FILES,
     ImageTooLargeError,
     get_media_file_path,
     save_uploaded_image,
 )
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -69,7 +73,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[frontend_origin],
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -126,6 +130,15 @@ class GalleryResponse(BaseModel):
     items: list[MediaResponse]
 
 
+class MediaUpdateData(BaseModel):
+    """Request model allowing changes only to a media title and visibility."""
+
+    title: str | None = Field(default=None, min_length=1, max_length=100)
+    visibility: Literal["public", "private"] | None = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
 def get_db() -> Generator[Session, None, None]:
     """Dependency that provides a database session for each request."""
     db = SessionLocal()
@@ -153,6 +166,50 @@ def get_current_user(request: Request, db: Annotated[Session, Depends(get_db)]) 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     return user
+
+
+def get_owned_media(
+    media_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Media:
+    """Retrieve a media record owned by the authenticated user.
+
+    Args:
+        media_id: The ID of the requested media record.
+        current_user: The user identified by the validated session.
+        db: The database session provided for this request.
+
+    Returns:
+        The media record belonging to the current user.
+
+    Raises:
+        HTTPException: With status 401 for an invalid session or 404 if the
+            record does not exist or belongs to another user.
+    """
+    media = db.scalar(
+        select(Media).where(Media.id == media_id, Media.owner_id == current_user.id)
+    )
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    return media
+
+
+def check_request_origin(request: Request) -> None:
+    """Reject state-changing requests from untrusted browser origins.
+
+    Args:
+        request: The incoming request containing the browser's Origin header.
+
+    Raises:
+        HTTPException: With status 403 if a supplied origin is neither the
+            configured frontend nor the backend itself.
+    """
+    # Browser forms can submit requests even when CORS blocks reading the response.
+    origin = request.headers.get("origin")
+    if origin is not None and origin not in (frontend_origin, str(request.base_url).rstrip("/")):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Untrusted request origin")
 
 
 @app.get("/api/health", tags=["Health"])
@@ -323,10 +380,7 @@ def upload_media(
             session, 403 for an untrusted browser origin, 413 for an oversized
             image, or 422 for invalid form fields.
     """
-    # Multipart forms can be submitted across origins even when CORS blocks reading responses.
-    origin = request.headers.get("origin")
-    if origin is not None and origin not in (frontend_origin, str(request.base_url).rstrip("/")):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Untrusted request origin")
+    check_request_origin(request)
 
     title = title.strip()
     if not title:
@@ -363,6 +417,118 @@ def upload_media(
         raise
 
     return response
+
+
+@app.patch("/api/media/{media_id}", response_model=MediaResponse, tags=["Media"])
+def update_media(
+    data: MediaUpdateData,
+    request: Request,
+    media: Annotated[Media, Depends(get_owned_media)],
+    db: Annotated[Session, Depends(get_db)],
+) -> MediaResponse:
+    """Update the title or visibility of an image owned by the current user.
+
+    Args:
+        data: The title and/or visibility fields to change.
+        request: The incoming request used to verify the browser's origin.
+        media: The media record returned by the ownership dependency.
+        db: The database session provided for this request.
+
+    Returns:
+        The updated media record.
+
+    Raises:
+        HTTPException: With status 401 for an invalid session, 403 for an
+            untrusted origin, 404 for an unavailable or unowned image, or
+            422 for invalid, empty, or null update fields.
+    """
+    check_request_origin(request)
+    changes = data.model_dump(exclude_unset=True)
+    if not changes or any(value is None for value in changes.values()):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Provide a title or visibility; values must not be null.",
+        )
+
+    if "title" in changes:
+        changes["title"] = changes["title"].strip()
+        if not changes["title"]:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="The title must not be blank.",
+            )
+
+    # Only explicitly supplied, validated fields are changed.
+    for field, value in changes.items():
+        setattr(media, field, value)
+
+    try:
+        db.flush()
+        response = MediaResponse.model_validate(media)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return response
+
+
+@app.delete("/api/media/{media_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Media"])
+def delete_media(
+    request: Request,
+    media: Annotated[Media, Depends(get_owned_media)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Response:
+    """Delete an owned media record and its unshared uploaded file.
+
+    Args:
+        request: The incoming request used to verify the browser's origin.
+        media: The media record returned by the ownership dependency.
+        db: The database session provided for this request.
+
+    Returns:
+        An empty response after deleting the record. Shared demo files remain
+        available. File cleanup failures are logged after the record is deleted.
+
+    Raises:
+        HTTPException: With status 401 for an invalid session, 403 for an
+            untrusted origin, 404 for an unavailable or unowned image, or
+            500 if the stored file path is invalid.
+    """
+    check_request_origin(request)
+    media_id = media.id
+    image_path = None
+
+    other_reference = db.scalar(
+        select(Media.id).where(Media.file_path == media.file_path, Media.id != media.id)
+    )
+    if media.file_path not in SAMPLE_FILES and other_reference is None:
+        try:
+            image_path = get_media_file_path(media.file_path)
+        except FileNotFoundError:
+            # A record can still be removed if its file is already missing.
+            pass
+        except ValueError as error:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="The stored image path is invalid.",
+            ) from error
+
+    try:
+        db.delete(media)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    # Delete the file only after a successful commit to preserve it on rollback.
+    if image_path is not None:
+        try:
+            image_path.unlink(missing_ok=True)
+        except OSError:
+            logger.exception("Could not remove the file for deleted media %s", media_id)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.get("/api/media/{media_id}/file", response_class=FileResponse, tags=["Media"])
