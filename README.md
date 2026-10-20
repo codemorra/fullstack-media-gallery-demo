@@ -88,4 +88,6 @@ Frontend checks, from `frontend/`: `npm run build` and `npm run lint`.
 
 ## License
 
-This project is licensed under the [MIT](LICENSE). Sample photos: © Christopher Kranz.
+This project is licensed under the [MIT License](LICENSE).
+
+Sample photos: © Christopher Kranz.
