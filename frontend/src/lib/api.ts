@@ -13,6 +13,19 @@ export type AuthenticatedUser = {
   email: string;
 };
 
+// These types match the public gallery response models in the backend.
+export type GalleryItem = {
+  id: number;
+  title: string;
+  file_path: string;
+  owner_id: number;
+  created_at: string;
+};
+
+export type GalleryResponse = {
+  items: GalleryItem[];
+};
+
 // This type represents the error response returned by the backend API.
 type ApiErrorResponse = {
   detail?: string;
@@ -110,8 +123,11 @@ export function register(
 }
 
 /**
- * Retrieves the gallery items from the backend API.
+ * Retrieves public gallery items without requiring login.
+ *
+ * @returns The public media records returned by the backend.
+ * @throws {Error} If the API is not configured, unavailable, or returns an error response.
  */
-export function getGallery(): Promise<{ items: unknown[] }> {
-  return apiRequest<{ items: unknown[] }>('/api/gallery');
+export function getGallery(): Promise<GalleryResponse> {
+  return apiRequest<GalleryResponse>('/api/gallery');
 }
