@@ -2,3 +2,89 @@
 
 /* Use Tailwind's dark: utilities with the .dark class controlled by the theme switch. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-w-80 bg-slate-50 antialiased dark:bg-slate-950;
+  }
+
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Shared Tailwind component styles keep forms and actions consistent on every page. */
+@layer components {
+  .button {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-indigo-400 dark:focus-visible:ring-offset-slate-950 motion-reduce:transition-none;
+  }
+
+  .button-primary {
+    @apply border border-transparent bg-linear-to-r from-indigo-600 to-violet-600 text-white shadow-sm hover:from-indigo-700 hover:to-violet-700 hover:shadow-md;
+  }
+
+  .button-secondary {
+    @apply border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-200;
+  }
+
+  .button-ghost {
+    @apply border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white;
+  }
+
+  .button-danger {
+    @apply border border-transparent bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600;
+  }
+
+  .button-danger-ghost {
+    @apply border border-transparent text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-300 dark:hover:bg-red-500/10 dark:hover:text-red-200;
+  }
+
+  .field {
+    @apply mt-2 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-slate-600 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20;
+  }
+
+  .field-label {
+    @apply text-sm font-medium text-slate-700 dark:text-slate-200;
+  }
+
+  .file-field {
+    @apply mt-2 block min-h-11 w-full rounded-md border border-slate-300 bg-white text-sm text-slate-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-3 file:font-medium file:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:file:bg-slate-800 dark:file:text-slate-200;
+  }
+
+  .panel {
+    @apply rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300;
+  }
+
+  .text-link {
+    @apply rounded-sm font-medium text-indigo-600 underline-offset-4 hover:text-indigo-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:text-indigo-300 dark:hover:text-indigo-200;
+  }
+
+  .notice {
+    @apply rounded-md border px-4 py-3 text-sm leading-6;
+  }
+
+  .notice-info {
+    @apply border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-200;
+  }
+
+  .notice-error {
+    @apply border-red-200 bg-red-50 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200;
+  }
+
+  .notice-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200;
+  }
+}

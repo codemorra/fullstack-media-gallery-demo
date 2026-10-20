@@ -2,7 +2,7 @@
  * App component that manages authentication state and routing for the application.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Route, Routes } from 'react-router';
 import {
   getCurrentUser,
@@ -50,8 +50,8 @@ function App() {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-  // Apply the selected color theme to the document and remember manual choices.
-  useEffect(() => {
+  // Apply the theme before painting to avoid flashing light controls in dark mode.
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
@@ -109,9 +109,7 @@ function App() {
   }
 
   function toggleTheme() {
-    setTheme((currentTheme) =>
-      currentTheme === 'dark' ? 'light' : 'dark',
-    );
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
   }
 
   // Determine if the application is currently checking the authentication status or if the user is authenticated
@@ -119,7 +117,14 @@ function App() {
   const isStaticPreview = !isApiConfigured;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen flex-col bg-linear-to-br from-indigo-50/60 via-slate-50 to-cyan-50/40 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-indigo-950/30 dark:text-slate-100">
+      <button
+        className="button button-primary fixed top-3 left-3 z-50 -translate-y-24 focus:translate-y-0"
+        type="button"
+        onClick={() => document.getElementById('main-content')?.focus()}
+      >
+        Skip to content
+      </button>
       <Navbar
         user={user}
         isCheckingAuth={isCheckingAuth}
@@ -129,15 +134,19 @@ function App() {
 
       {isStaticPreview && (
         <div
-          className="border-b border-amber-300 bg-amber-50 px-6 py-3 text-center text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
+          className="border-b border-indigo-200/60 bg-indigo-50/80 px-5 py-2.5 text-center text-xs leading-5 text-indigo-700 dark:border-indigo-400/15 dark:bg-indigo-400/5 dark:text-indigo-300"
           role="status"
         >
-          Static frontend preview: sample images are available, while
-          authentication and future upload features require a backend.
+          Frontend preview · Browse the sample collection. Sign-in and image
+          management are available when running the project locally.
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-6">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 outline-none sm:px-6 sm:py-14"
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<Gallery key="public" />} />
@@ -159,6 +168,12 @@ function App() {
           />
         </Routes>
       </main>
+      <footer className="border-t border-slate-200/70 dark:border-slate-800/70">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-5 py-5 text-xs text-slate-500 sm:px-6 dark:text-slate-400">
+          <p>Fullstack Media Gallery · A learning project</p>
+          <p>Work in progress</p>
+        </div>
+      </footer>
     </div>
   );
 }

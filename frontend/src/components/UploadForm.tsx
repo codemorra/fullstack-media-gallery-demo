@@ -67,7 +67,7 @@ function UploadForm({ onUploaded }: UploadFormProps) {
 
   return (
     <form
-      className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      className="panel mt-8 space-y-5 p-6"
       onSubmit={handleSubmit}
       aria-busy={isSubmitting}
     >
@@ -81,11 +81,9 @@ function UploadForm({ onUploaded }: UploadFormProps) {
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Title
-          </span>
+          <span className="field-label">Title</span>
           <input
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-300"
+            className="field"
             type="text"
             name="title"
             value={title}
@@ -97,11 +95,9 @@ function UploadForm({ onUploaded }: UploadFormProps) {
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Image file
-          </span>
+          <span className="field-label">Image file</span>
           <input
-            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-3 file:py-2.5 file:font-medium file:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:file:bg-slate-800 dark:file:text-slate-200"
+            className="file-field"
             type="file"
             name="file"
             accept="image/jpeg,image/png,image/webp"
@@ -113,21 +109,18 @@ function UploadForm({ onUploaded }: UploadFormProps) {
       </div>
 
       {errorMessage && (
-        <p className="text-sm text-red-600 dark:text-red-300" role="alert">
+        <p className="notice notice-error" role="alert">
           {errorMessage}
         </p>
       )}
       {successMessage && (
-        <p
-          className="text-sm text-emerald-700 dark:text-emerald-300"
-          role="status"
-        >
+        <p className="notice notice-success" role="status">
           {successMessage}
         </p>
       )}
 
       <button
-        className="rounded-lg bg-cyan-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-400 dark:hover:bg-cyan-300"
+        className="button button-primary"
         type="submit"
         disabled={isSubmitting}
       >

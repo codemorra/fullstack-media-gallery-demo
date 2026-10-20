@@ -45,29 +45,31 @@ function Login({ onLogin }: LoginProps) {
   }
 
   return (
-    <section className="mx-auto max-w-md">
-      <h1 className="text-3xl font-bold tracking-tight">Login</h1>
+    <section className="mx-auto my-4 max-w-md sm:my-8">
+      <p className="eyebrow">Your collection awaits</p>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+        Welcome back.
+      </h1>
       <p className="mt-2 text-slate-500 dark:text-slate-400">
         Log in to view your own images.
       </p>
 
       {!isApiConfigured && (
-        <p className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
-          Login not possible without a local backend connection.
+        <p className="notice notice-info mt-6">
+          Sign-in is unavailable in the static preview.
         </p>
       )}
 
       <form
-        className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        className="panel mt-8 space-y-5 border-t-2 border-t-indigo-500 p-6 sm:p-8"
         onSubmit={handleSubmit}
       >
         <label className="block">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Email
-          </span>
+          <span className="field-label">Email</span>
           <input
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-300 dark:focus:ring-cyan-300/20"
+            className="field"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -75,12 +77,11 @@ function Login({ onLogin }: LoginProps) {
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Password
-          </span>
+          <span className="field-label">Password</span>
           <input
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-300 dark:focus:ring-cyan-300/20"
+            className="field"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
@@ -88,13 +89,13 @@ function Login({ onLogin }: LoginProps) {
         </label>
 
         {errorMessage && (
-          <p className="text-sm text-red-600 dark:text-red-300">
+          <p className="notice notice-error" role="alert">
             {errorMessage}
           </p>
         )}
 
         <button
-          className="w-full rounded-lg bg-cyan-500 px-4 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-400 dark:hover:bg-cyan-300"
+          className="button button-primary w-full"
           type="submit"
           disabled={!isApiConfigured || isSubmitting}
         >
@@ -102,12 +103,9 @@ function Login({ onLogin }: LoginProps) {
         </button>
       </form>
 
-      <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         No account yet?{' '}
-        <Link
-          className="font-medium text-cyan-700 hover:text-cyan-600 dark:text-cyan-300 dark:hover:text-cyan-200"
-          to="/register"
-        >
+        <Link className="text-link" to="/register">
           Register here
         </Link>
       </p>
