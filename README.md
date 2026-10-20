@@ -24,9 +24,10 @@ Work in progress. The current version includes:
 - a public gallery API that returns only public media records
 - authenticated image uploads with Pillow validation and WebP conversion
 - image file access restricted by visibility and ownership
+- owner-only title editing, visibility changes, and image deletion
 
-Editing and deleting images, visibility controls, downloads in different
-resolutions, and further visual polish are planned for later iterations.
+Downloads in different resolutions and further visual polish are planned for
+later iterations.
 
 ## Run locally
 
@@ -123,8 +124,7 @@ as in the GitHub Pages preview. Restart Vite after changing the configuration.
 
 Run both applications, log in, and open **My images**. Enter a title and select
 a JPEG, PNG, or WebP file, then click **Upload image**. New images are private
-and appear immediately in the personal gallery. Publishing them is not yet
-available.
+and appear immediately in the personal gallery.
 
 Uploads are limited to 10 MiB and 20 million pixels. Animated images are not
 supported. Pillow validates the actual image contents, applies EXIF orientation,
@@ -136,6 +136,20 @@ ignored by Git. The frontend loads backend images through
 `GET /api/media/{id}/file`: public images are accessible without login, while
 private images require their owner's session. The upload endpoint is
 `POST /api/media`, accepting `title` and `file` as multipart form fields.
+
+### Managing images
+
+In **My images**, choose **Edit** on an image card to change its title or
+visibility, then **Save changes**. Public images appear in the public gallery;
+private uploads are accessible only to their owner. Choose **Delete** and confirm
+with **Delete permanently** to remove an image. Successful changes appear
+immediately in the personal gallery.
+
+The backend checks ownership for both `PATCH /api/media/{id}` and
+`DELETE /api/media/{id}`. Deleting an uploaded image removes its database record
+and, when no other record references it, its stored file. Shared demo image
+files are kept. A file cleanup failure is logged after the database record is
+deleted; the file is then no longer accessible through the media endpoint.
 
 ## License
 
