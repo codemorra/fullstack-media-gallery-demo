@@ -15,9 +15,10 @@ function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
 
   return (
     <button
-      className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-cyan-500 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-cyan-300 dark:hover:text-cyan-300"
+      className="button button-secondary size-10 shrink-0 p-0"
       type="button"
       onClick={onToggle}
+      aria-pressed={isDarkTheme}
       aria-label={isDarkTheme ? 'Use light theme' : 'Use dark theme'}
       title={isDarkTheme ? 'Use light theme' : 'Use dark theme'}
     >

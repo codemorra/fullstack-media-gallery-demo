@@ -87,9 +87,9 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
       aria-busy={isSubmitting}
     >
       {mode === null && (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <button
-            className="font-medium text-cyan-700 hover:text-cyan-600 dark:text-cyan-300 dark:hover:text-cyan-200"
+            className="button button-secondary min-h-9 px-3 py-1.5 text-xs"
             type="button"
             aria-label={`Edit ${item.title}`}
             onClick={() => {
@@ -103,7 +103,7 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
             Edit
           </button>
           <button
-            className="font-medium text-red-600 hover:text-red-700 dark:text-red-300 dark:hover:text-red-200"
+            className="button button-danger-ghost min-h-9 px-3 py-1.5 text-xs"
             type="button"
             aria-label={`Delete ${item.title}`}
             onClick={() => {
@@ -119,11 +119,9 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
       {mode === 'edit' && (
         <form className="space-y-4" onSubmit={handleSave}>
           <label className="block">
-            <span className="font-medium text-slate-700 dark:text-slate-200">
-              Title
-            </span>
+            <span className="field-label">Title</span>
             <input
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="field"
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -134,11 +132,9 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
           </label>
 
           <label className="block">
-            <span className="font-medium text-slate-700 dark:text-slate-200">
-              Visibility
-            </span>
+            <span className="field-label">Visibility</span>
             <select
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="field"
               value={visibility}
               onChange={(event) =>
                 setVisibility(event.target.value as GalleryItem['visibility'])
@@ -156,14 +152,14 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
 
           <div className="flex flex-wrap gap-3">
             <button
-              className="rounded-lg bg-cyan-500 px-3 py-2 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-400 dark:hover:bg-cyan-300"
+              className="button button-primary"
               type="submit"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Saving …' : 'Save changes'}
             </button>
             <button
-              className="rounded-lg border border-slate-300 px-3 py-2 font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="button button-secondary"
               type="button"
               disabled={isSubmitting}
               onClick={() => {
@@ -178,13 +174,13 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
       )}
 
       {mode === 'delete' && (
-        <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-400/30 dark:bg-red-400/10">
+        <div className="notice notice-error space-y-3">
           <p className="text-red-700 dark:text-red-200">
             Delete “{item.title}”? This cannot be undone.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
-              className="rounded-lg bg-red-600 px-3 py-2 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500 dark:hover:bg-red-600"
+              className="button button-danger"
               type="button"
               disabled={isSubmitting}
               onClick={handleDelete}
@@ -192,7 +188,7 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
               {isSubmitting ? 'Deleting …' : 'Delete permanently'}
             </button>
             <button
-              className="rounded-lg border border-slate-300 px-3 py-2 font-medium text-slate-600 hover:bg-white disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="button button-secondary"
               type="button"
               disabled={isSubmitting}
               onClick={() => {
@@ -207,7 +203,7 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
       )}
 
       {errorMessage && (
-        <p className="mt-3 text-red-600 dark:text-red-300" role="alert">
+        <p className="notice notice-error mt-3" role="alert">
           {errorMessage}
         </p>
       )}

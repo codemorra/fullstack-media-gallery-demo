@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 import type { ReactNode } from 'react';
 import type { AuthenticatedUser } from '../lib/api.ts';
 
@@ -16,11 +16,35 @@ type NavbarProps = {
 };
 
 /**
+ * Builds the shared navigation style with a visible active-page state.
+ *
+ * @param state - The active route information supplied by React Router.
+ * @returns Tailwind classes for the navigation link.
+ */
+function navigationClass({ isActive }: { isActive: boolean }): string {
+  return `button button-ghost ${isActive ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-200' : ''}`;
+}
+
+/**
  * Component that renders the navigation bar with links and user authentication status.
  */
 function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { to: '/', label: 'Home' },
+    { to: '/gallery', label: 'Gallery' },
+    ...(isCheckingAuth
+      ? []
+      : user
+        ? [{ to: '/my-gallery', label: 'My images' }]
+        : [
+            { to: '/login', label: 'Login' },
+            { to: '/register', label: 'Register' },
+          ]),
+  ];
 
   // Handle user logout.
   async function handleLogout() {
@@ -29,6 +53,7 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
     // Attempt to log out the user and navigate to the home page.
     try {
       await onLogout();
+      setIsMenuOpen(false);
       navigate('/');
     } catch (error) {
       setErrorMessage(
@@ -37,79 +62,121 @@ function Navbar({ user, isCheckingAuth, onLogout, themeToggle }: NavbarProps) {
     }
   }
 
-  return (
-    <header className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-      <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-        <Link
-          className="font-semibold tracking-tight text-slate-950 dark:text-white"
-          to="/"
+  const navigation = (
+    <>
+      {navigationItems.map(({ to, label }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={to === '/'}
+          className={
+            to === '/register' ? 'button button-primary' : navigationClass
+          }
+          onClick={() => setIsMenuOpen(false)}
         >
-          Fullstack{' '}
-          <span className="text-cyan-600 dark:text-cyan-300">
-            Media Gallery
+          {label}
+        </NavLink>
+      ))}
+      {isCheckingAuth && (
+        <span className="px-3 text-xs text-slate-500">Checking session …</span>
+      )}
+      {!isCheckingAuth && user && (
+        <>
+          <span className="hidden max-w-32 truncate px-2 text-xs text-slate-500 lg:block dark:text-slate-400">
+            {user.username}
           </span>
-        </Link>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </>
+      )}
+    </>
+  );
 
-        <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300">
+  return (
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/85">
+      <nav
+        className="mx-auto w-full max-w-7xl px-5 sm:px-6"
+        aria-label="Main navigation"
+      >
+        <div className="flex min-h-20 items-center justify-between gap-3">
           <Link
-            className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
+            className="flex shrink-0 items-center gap-3"
             to="/"
+            onClick={() => setIsMenuOpen(false)}
           >
-            Home
-          </Link>
-          <Link
-            className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
-            to="/gallery"
-          >
-            Gallery
-          </Link>
-
-          {isCheckingAuth ? (
-            <span className="hidden text-slate-400 sm:inline">
-              Checking session …
+            <span className="grid size-9 place-items-center rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 text-white shadow-sm">
+              <svg
+                aria-hidden="true"
+                className="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8" cy="8" r="1.5" />
+                <path d="m3 16 5-5 4 4 3-3 6 6" />
+              </svg>
             </span>
-          ) : user ? (
-            <>
-              <Link
-                className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
-                to="/my-gallery"
-              >
-                My images
-              </Link>
-              <span className="hidden text-slate-500 sm:inline dark:text-slate-400">
-                {user.username}
+            <span>
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                Fullstack
               </span>
-              <button
-                className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
-                type="button"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
-                to="/login"
-              >
-                Login
-              </Link>
-              <Link
-                className="transition hover:text-cyan-600 dark:hover:text-cyan-300"
-                to="/register"
-              >
-                Register
-              </Link>
-            </>
-          )}
+              <span className="block text-sm font-semibold tracking-tight text-slate-950 sm:text-base dark:text-white">
+                Media Gallery
+              </span>
+            </span>
+          </Link>
 
-          {themeToggle}
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-1 md:flex">
+              {navigation}
+            </div>
+            {themeToggle}
+            <button
+              className="button button-secondary size-10 p-0 md:hidden"
+              type="button"
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-navigation"
+              aria-label={isMenuOpen ? 'Close navigation' : 'Open navigation'}
+              onClick={() => setIsMenuOpen((open) => !open)}
+            >
+              <svg
+                aria-hidden="true"
+                className="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              >
+                <path
+                  d={
+                    isMenuOpen
+                      ? 'm6 6 12 12M6 18 18 6'
+                      : 'M4 6h16M4 12h16M4 18h16'
+                  }
+                />
+              </svg>
+            </button>
+          </div>
         </div>
+        {isMenuOpen && (
+          <div
+            id="mobile-navigation"
+            className="flex flex-wrap gap-2 border-t border-slate-200 py-4 md:hidden dark:border-slate-800"
+          >
+            {navigation}
+          </div>
+        )}
       </nav>
-
       {errorMessage && (
-        <p className="px-6 pb-3 text-center text-sm text-red-600 dark:text-red-300">
+        <p className="notice notice-error mx-auto mb-3 max-w-7xl" role="alert">
           {errorMessage}
         </p>
       )}

@@ -119,10 +119,10 @@ function Gallery({ personal = false }: GalleryProps) {
   }
 
   return (
-    <section className="py-4 sm:py-8">
+    <section>
       <div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-8 dark:border-slate-800 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700 dark:text-cyan-300">
+          <p className="eyebrow">
             {personal
               ? 'Your collection'
               : isApiConfigured
@@ -142,7 +142,7 @@ function Gallery({ personal = false }: GalleryProps) {
         </div>
 
         {!isLoading && !errorMessage && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="panel self-start px-3 py-2 text-xs font-medium text-slate-500 sm:self-auto dark:text-slate-400">
             {galleryItems.length}{' '}
             {galleryItems.length === 1 ? 'image' : 'images'}
           </p>
@@ -156,10 +156,7 @@ function Gallery({ personal = false }: GalleryProps) {
       )}
 
       {errorMessage && (
-        <p
-          className="mt-8 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-200"
-          role="alert"
-        >
+        <p className="notice notice-error mt-8" role="alert">
           {errorMessage}
         </p>
       )}
@@ -169,30 +166,27 @@ function Gallery({ personal = false }: GalleryProps) {
       )}
 
       {actionMessage && (
-        <p
-          className="mt-6 text-sm text-emerald-700 dark:text-emerald-300"
-          role="status"
-        >
+        <p className="notice notice-success mt-6" role="status">
           {actionMessage}
         </p>
       )}
 
       {!isLoading && !errorMessage && galleryItems.length === 0 && (
-        <p className="mt-8 text-slate-500 dark:text-slate-400" role="status">
+        <p
+          className="panel mt-8 px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
+          role="status"
+        >
           {personal ? 'You have no images yet.' : 'No public images yet.'}
         </p>
       )}
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {galleryItems.map((item, index) => (
-          <figure
-            className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-            key={item.id}
-          >
+          <figure className="panel group overflow-hidden" key={item.id}>
             <div className="aspect-3/2 overflow-hidden bg-slate-100 dark:bg-slate-800">
               <img
                 alt={item.title}
-                className="size-full object-cover transition duration-500 group-hover:scale-105"
+                className="size-full object-cover transition duration-500 ease-out group-hover:scale-[1.035] motion-reduce:transform-none motion-reduce:transition-none"
                 loading={index < 3 ? 'eager' : 'lazy'}
                 // Private images require the same session cookie as API requests.
                 crossOrigin={isApiConfigured ? 'use-credentials' : undefined}
@@ -210,7 +204,9 @@ function Gallery({ personal = false }: GalleryProps) {
                     {item.title}
                   </span>
                   {personal && (
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <span
+                      className={`rounded px-2 py-1 text-[11px] font-medium ${item.visibility === 'private' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300'}`}
+                    >
                       {item.visibility === 'private' ? 'Private' : 'Public'}
                     </span>
                   )}
