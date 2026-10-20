@@ -122,7 +122,8 @@ as in the GitHub Pages preview. Restart Vite after changing the configuration.
 
 ### Image uploads
 
-Run both applications, log in, and open **My images**. Enter a title and select
+Run both applications, log in, and open **My images**. Choose **Upload image**
+to open the upload dialog. Enter a title and select
 a JPEG, PNG, or WebP file, then click **Upload image**. New images are private
 and appear immediately in the personal gallery.
 
@@ -144,6 +145,9 @@ visibility, then **Save changes**. Public images appear in the public gallery;
 private uploads are accessible only to their owner. Choose **Delete** and confirm
 with **Delete permanently** to remove an image. Successful changes appear
 immediately in the personal gallery.
+
+Click an image to open a larger, uncropped view. Close dialogs with the close
+button or Escape; pending uploads and changes must finish before dismissal.
 
 The backend checks ownership for both `PATCH /api/media/{id}` and
 `DELETE /api/media/{id}`. Deleting an uploaded image removes its database record
