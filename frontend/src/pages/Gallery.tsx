@@ -5,13 +5,18 @@
 import { useEffect, useState } from 'react';
 import {
   getGallery,
+  getMediaFileUrl,
   getMyGallery,
   isApiConfigured,
   type GalleryItem,
 } from '../lib/api.ts';
+import UploadForm from '../components/UploadForm.tsx';
 
 // Both data sources provide the same fields needed by the image cards.
-type GalleryCard = Pick<GalleryItem, 'id' | 'title' | 'file_path' | 'visibility'>;
+type GalleryCard = Pick<
+  GalleryItem,
+  'id' | 'title' | 'file_path' | 'visibility'
+>;
 
 type GalleryProps = {
   personal?: boolean;
@@ -79,6 +84,15 @@ function Gallery({ personal = false }: GalleryProps) {
     };
   }, [personal]);
 
+  /**
+   * Adds a successfully uploaded image to the personal collection immediately.
+   *
+   * @param item - The new media record returned by the upload endpoint.
+   */
+  function handleUploaded(item: GalleryItem) {
+    setGalleryItems((items) => [item, ...items]);
+  }
+
   return (
     <section className="py-4 sm:py-8">
       <div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-8 dark:border-slate-800 sm:flex-row sm:items-end">
@@ -125,6 +139,10 @@ function Gallery({ personal = false }: GalleryProps) {
         </p>
       )}
 
+      {personal && isApiConfigured && !isLoading && !errorMessage && (
+        <UploadForm onUploaded={handleUploaded} />
+      )}
+
       {!isLoading && !errorMessage && galleryItems.length === 0 && (
         <p className="mt-8 text-slate-500 dark:text-slate-400" role="status">
           {personal ? 'You have no images yet.' : 'No public images yet.'}
@@ -142,8 +160,13 @@ function Gallery({ personal = false }: GalleryProps) {
                 alt={item.title}
                 className="size-full object-cover transition duration-500 group-hover:scale-105"
                 loading={index < 3 ? 'eager' : 'lazy'}
-                // Seed records currently reference files bundled with the frontend.
-                src={`${import.meta.env.BASE_URL}${item.file_path}`}
+                // Private images require the same session cookie as API requests.
+                crossOrigin={isApiConfigured ? 'use-credentials' : undefined}
+                src={
+                  isApiConfigured
+                    ? getMediaFileUrl(item.id)
+                    : `${import.meta.env.BASE_URL}${item.file_path}`
+                }
               />
             </div>
             <figcaption className="flex items-center justify-between px-4 py-3 text-sm">
@@ -158,7 +181,11 @@ function Gallery({ personal = false }: GalleryProps) {
                 )}
               </div>
               <span className="text-slate-400 dark:text-slate-500">
-                © Christopher Kranz
+                {sampleGalleryItems.some(
+                  (sample) => sample.file_path === item.file_path,
+                )
+                  ? '© Christopher Kranz'
+                  : 'Uploaded image'}
               </span>
             </figcaption>
           </figure>
