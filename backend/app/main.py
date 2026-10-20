@@ -32,9 +32,9 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import AliasPath, BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import SessionLocal
@@ -118,6 +118,8 @@ class MediaResponse(BaseModel):
     title: str
     file_path: str
     owner_id: int
+    # Read only the owner's public username from the existing relationship.
+    owner_username: str = Field(validation_alias=AliasPath("owner", "username"))
     visibility: Literal["public", "private"]
     created_at: datetime
 
@@ -315,6 +317,7 @@ def get_gallery(db: Annotated[Session, Depends(get_db)]) -> GalleryResponse:
     # Filter in the database so private records never enter the public response.
     items = db.scalars(
         select(Media)
+        .options(joinedload(Media.owner))
         .where(Media.visibility == "public")
         .order_by(Media.created_at.desc(), Media.id.desc())
     ).all()
@@ -343,6 +346,7 @@ def get_my_gallery(
     # Determine ownership from the session rather than a client-supplied user ID.
     items = db.scalars(
         select(Media)
+        .options(joinedload(Media.owner))
         .where(Media.owner_id == current_user.id)
         .order_by(Media.created_at.desc(), Media.id.desc())
     ).all()
@@ -362,8 +366,9 @@ def upload_media(
     db: Annotated[Session, Depends(get_db)],
     title: Annotated[str, Form(min_length=1, max_length=100)],
     file: Annotated[UploadFile, File()],
+    visibility: Annotated[Literal["public", "private"], Form()] = "private",
 ) -> MediaResponse:
-    """Upload an image and create a private media record for the current user.
+    """Upload an image with the selected visibility for the current user.
 
     Args:
         request: The incoming request used to verify the browser's origin.
@@ -371,9 +376,10 @@ def upload_media(
         db: The database session provided for this request.
         title: A descriptive title containing 1-100 characters.
         file: A JPEG, PNG, or WebP image sent as multipart form data.
+        visibility: Who may view the image; defaults to private when omitted.
 
     Returns:
-        The newly created private media record.
+        The newly created media record including its uploader's username.
 
     Raises:
         HTTPException: With status 400 for invalid images, 401 for an invalid
@@ -403,7 +409,7 @@ def upload_media(
         title=title,
         file_path=image_path.name,
         owner_id=current_user.id,
-        visibility="private",
+        visibility=visibility,
     )
     try:
         db.add(media)
