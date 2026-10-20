@@ -19,6 +19,8 @@ Work in progress. The current version includes:
 - registration, login, logout, and session-based authentication
 - a public gallery with locally bundled sample images
 - Alembic database migrations for schema changes
+- a media model with ownership and visibility, plus a local demo seed script
+- a public gallery API that returns only public media records
 
 Media uploads, user-owned gallery content, image processing, and further visual
 polish are planned for later iterations.
@@ -78,6 +80,11 @@ or overwriting existing media.
 Visibility currently applies only to database records. The sample image files
 in `frontend/public/` remain public, and the frontend still shows its static
 collection independently of the database.
+
+With the backend running, `GET /api/gallery` returns public media records
+without requiring login. After seeding a fresh database, it returns four items;
+the two private records are excluded even when logged in as their owner.
+The response contains metadata and relative file paths, not the image files.
 
 ### Frontend
 

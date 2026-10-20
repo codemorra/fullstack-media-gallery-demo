@@ -13,11 +13,13 @@ and CORS.
 """
 
 import os
-
 from collections.abc import Generator
+from datetime import datetime
 from pathlib import Path
+from typing import Annotated
+
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -26,10 +28,10 @@ from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import SessionLocal
-from app.models import User
+from app.models import Media, User
 from app.security import (
-    hash_password,
     DUMMY_PASSWORD_HASH,
+    hash_password,
     verify_password,
 )
 
@@ -90,6 +92,24 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MediaResponse(BaseModel):
+    """Response model for a public gallery item without private user details."""
+
+    id: int
+    title: str
+    file_path: str
+    owner_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GalleryResponse(BaseModel):
+    """Response model containing the public gallery items."""
+
+    items: list[MediaResponse]
+
+
 def get_db() -> Generator[Session, None, None]:
     """Dependency that provides a database session for each request."""
     db = SessionLocal()
@@ -99,7 +119,7 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+def get_current_user(request: Request, db: Annotated[Session, Depends(get_db)]) -> User:
     """Dependency that retrieves the currently authenticated user based on the session."""
     user_id = request.session.get("user_id")
 
@@ -131,7 +151,7 @@ def health() -> dict[str, str]:
     status_code=status.HTTP_201_CREATED,
     tags=["Authentication"],
 )
-def register_user(data: RegisterData, db: Session = Depends(get_db)) -> User:
+def register_user(data: RegisterData, db: Annotated[Session, Depends(get_db)]) -> User:
     """Endpoint to register a new user. Validates the input data, checks for existing users,
     hashes the password, and creates a new user in the database."""
     email = str(data.email).lower()
@@ -163,7 +183,9 @@ def register_user(data: RegisterData, db: Session = Depends(get_db)) -> User:
     status_code=status.HTTP_200_OK,
     tags=["Authentication"],
 )
-def login_user(data: LoginData, request: Request, db: Session = Depends(get_db)) -> User:
+def login_user(
+    data: LoginData, request: Request, db: Annotated[Session, Depends(get_db)]
+) -> User:
     """Endpoint to log in a user. Validates the input data, checks the credentials,
     and sets the user ID in the session if successful."""
     email = str(data.email).lower()
@@ -175,7 +197,6 @@ def login_user(data: LoginData, request: Request, db: Session = Depends(get_db))
 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    #
     if not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
@@ -202,14 +223,27 @@ def logout_user(request: Request) -> Response:
     status_code=status.HTTP_200_OK,
     tags=["Authentication"],
 )
-def get_current_user_route(current_user: User = Depends(get_current_user)) -> User:
+def get_current_user_route(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     """Endpoint to retrieve the currently authenticated user's information."""
     return current_user
 
 
-@app.get("/api/gallery", tags=["Gallery"])
-def get_gallery(_: User = Depends(get_current_user)):
-    """Return placeholder gallery data for an authenticated user."""
-    return {
-        "items": [],
-    }
+@app.get("/api/gallery", response_model=GalleryResponse, tags=["Gallery"])
+def get_gallery(db: Annotated[Session, Depends(get_db)]) -> GalleryResponse:
+    """Return public media records without requiring authentication.
+
+    Args:
+        db: The database session provided for this request.
+
+    Returns:
+        Public gallery items ordered by creation time, newest first.
+        Items created at the same time are ordered by descending ID.
+    """
+    # Filter in the database so private records never enter the public response.
+    items = db.scalars(
+        select(Media)
+        .where(Media.visibility == "public")
+        .order_by(Media.created_at.desc(), Media.id.desc())
+    ).all()
+
+    return GalleryResponse(items=[MediaResponse.model_validate(item) for item in items])
