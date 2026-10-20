@@ -1,11 +1,12 @@
 /**
- * Upload form for adding private images to the authenticated user's gallery.
+ * Upload form for adding images with a selected visibility to the user's gallery.
  */
 
 import { useState } from 'react';
 import type * as React from 'react';
 import { uploadImage, type GalleryItem } from '../lib/api.ts';
 import Modal from './Modal.tsx';
+import VisibilitySelect from './VisibilitySelect.tsx';
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
@@ -22,6 +23,8 @@ type UploadFormProps = {
  */
 function UploadForm({ onUploaded }: UploadFormProps) {
   const [title, setTitle] = useState('');
+  const [visibility, setVisibility] =
+    useState<GalleryItem['visibility']>('private');
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,12 +55,12 @@ function UploadForm({ onUploaded }: UploadFormProps) {
     setIsSubmitting(true);
     try {
       // The backend performs the authoritative format, size, and ownership checks.
-      const item = await uploadImage(title.trim(), file);
+      const item = await uploadImage(title.trim(), file, visibility);
       onUploaded(item);
       setTitle('');
       setFile(null);
       form.reset();
-      setSuccessMessage('Image uploaded as private.');
+      setSuccessMessage(`Image uploaded as ${item.visibility}.`);
       setIsOpen(false);
     } catch (error) {
       setErrorMessage(
@@ -76,6 +79,7 @@ function UploadForm({ onUploaded }: UploadFormProps) {
         aria-haspopup="dialog"
         onClick={() => {
           setTitle('');
+          setVisibility('private');
           setFile(null);
           setErrorMessage(null);
           setSuccessMessage(null);
@@ -102,8 +106,8 @@ function UploadForm({ onUploaded }: UploadFormProps) {
           >
             <div>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                New uploads are private. JPEG, PNG, or WebP, up to 10 MiB and 20
-                million pixels. Animated images are not supported.
+                JPEG, PNG, or WebP, up to 10 MiB and 20 million pixels. Animated
+                images are not supported.
               </p>
             </div>
 
@@ -136,6 +140,12 @@ function UploadForm({ onUploaded }: UploadFormProps) {
                 />
               </label>
             </div>
+
+            <VisibilitySelect
+              value={visibility}
+              onChange={setVisibility}
+              disabled={isSubmitting}
+            />
 
             {errorMessage && (
               <p className="notice notice-error" role="alert">

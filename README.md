@@ -25,6 +25,7 @@ Work in progress. The current version includes:
 - authenticated image uploads with Pillow validation and WebP conversion
 - image file access restricted by visibility and ownership
 - owner-only title editing, visibility changes, and image deletion
+- uploader attribution and visibility selection when uploading images
 
 Downloads in different resolutions and further visual polish are planned for
 later iterations.
@@ -123,9 +124,10 @@ as in the GitHub Pages preview. Restart Vite after changing the configuration.
 ### Image uploads
 
 Run both applications, log in, and open **My images**. Choose **Upload image**
-to open the upload dialog. Enter a title and select
-a JPEG, PNG, or WebP file, then click **Upload image**. New images are private
-and appear immediately in the personal gallery.
+to open the upload dialog. Enter a title, select a JPEG, PNG, or WebP file,
+and choose **Private — only you** (the default) or **Public — everyone**.
+Click **Upload image** to save the image. It appears immediately in the personal
+gallery; public uploads also appear in the public gallery.
 
 Uploads are limited to 10 MiB and 20 million pixels. Animated images are not
 supported. Pillow validates the actual image contents, applies EXIF orientation,
@@ -136,7 +138,8 @@ Files are stored in `backend/uploads/`, which is created automatically and
 ignored by Git. The frontend loads backend images through
 `GET /api/media/{id}/file`: public images are accessible without login, while
 private images require their owner's session. The upload endpoint is
-`POST /api/media`, accepting `title` and `file` as multipart form fields.
+`POST /api/media`, accepting `title`, `file`, and optional `visibility` as
+multipart form fields. Omitting `visibility` keeps the image private.
 
 ### Managing images
 
@@ -148,6 +151,12 @@ immediately in the personal gallery.
 
 Click an image to open a larger, uncropped view. Close dialogs with the close
 button or Escape; pending uploads and changes must finish before dismissal.
+
+Image cards and the enlarged view show **Uploaded by …** using the uploader's
+username from the API, not their email. The static sample preview has no user
+assignment. The six sample photos show their copyright notice in the bottom-right
+corner of the image; uploader
+attribution does not imply copyright ownership.
 
 The backend checks ownership for both `PATCH /api/media/{id}` and
 `DELETE /api/media/{id}`. Deleting an uploaded image removes its database record

@@ -13,12 +13,14 @@ import {
 import UploadForm from '../components/UploadForm.tsx';
 import MediaActions from '../components/MediaActions.tsx';
 import Modal from '../components/Modal.tsx';
+import MediaAttribution from '../components/MediaAttribution.tsx';
+import SampleCopyright from '../components/SampleCopyright.tsx';
 
 // Both data sources provide the same fields needed by the image cards.
 type GalleryCard = Pick<
   GalleryItem,
   'id' | 'title' | 'file_path' | 'visibility'
->;
+> & { owner_username?: string };
 
 type GalleryProps = {
   personal?: boolean;
@@ -186,7 +188,7 @@ function Gallery({ personal = false }: GalleryProps) {
         {galleryItems.map((item, index) => (
           <figure className="panel group overflow-hidden" key={item.id}>
             <button
-              className="block aspect-3/2 w-full overflow-hidden bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-inset dark:bg-slate-800"
+              className="relative block aspect-3/2 w-full overflow-hidden bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-inset dark:bg-slate-800"
               type="button"
               aria-label={`Open ${item.title}`}
               aria-haspopup="dialog"
@@ -204,6 +206,7 @@ function Gallery({ personal = false }: GalleryProps) {
                     : `${import.meta.env.BASE_URL}${item.file_path}`
                 }
               />
+              <SampleCopyright filePath={item.file_path} />
             </button>
             <figcaption className="px-4 py-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -219,13 +222,7 @@ function Gallery({ personal = false }: GalleryProps) {
                     </span>
                   )}
                 </div>
-                <span className="text-slate-400 dark:text-slate-500">
-                  {sampleGalleryItems.some(
-                    (sample) => sample.file_path === item.file_path,
-                  )
-                    ? '© Christopher Kranz'
-                    : 'Uploaded image'}
-                </span>
+                <MediaAttribution username={item.owner_username} />
               </div>
               {personal && (
                 <MediaActions
@@ -245,23 +242,22 @@ function Gallery({ personal = false }: GalleryProps) {
           wide
           onClose={() => setSelectedImage(null)}
         >
-          <img
-            className="mx-auto max-h-[70dvh] max-w-full rounded-sm object-contain"
-            alt={selectedImage.title}
-            crossOrigin={isApiConfigured ? 'use-credentials' : undefined}
-            src={
-              isApiConfigured
-                ? getMediaFileUrl(selectedImage.id)
-                : `${import.meta.env.BASE_URL}${selectedImage.file_path}`
-            }
-          />
-          {sampleGalleryItems.some(
-            (sample) => sample.file_path === selectedImage.file_path,
-          ) && (
-            <p className="mt-4 text-right text-xs text-slate-500 dark:text-slate-400">
-              © Christopher Kranz
-            </p>
-          )}
+          <div className="relative mx-auto w-fit max-w-full overflow-hidden rounded-sm">
+            <img
+              className="block max-h-[70dvh] max-w-full object-contain"
+              alt={selectedImage.title}
+              crossOrigin={isApiConfigured ? 'use-credentials' : undefined}
+              src={
+                isApiConfigured
+                  ? getMediaFileUrl(selectedImage.id)
+                  : `${import.meta.env.BASE_URL}${selectedImage.file_path}`
+              }
+            />
+            <SampleCopyright filePath={selectedImage.file_path} />
+          </div>
+          <div className="mt-4 text-right">
+            <MediaAttribution username={selectedImage.owner_username} />
+          </div>
         </Modal>
       )}
     </section>
