@@ -6,6 +6,7 @@ import { useState } from 'react';
 import type * as React from 'react';
 import { deleteImage, updateImage, type GalleryItem } from '../lib/api.ts';
 import Modal from './Modal.tsx';
+import VisibilitySelect from './VisibilitySelect.tsx';
 
 type MediaActionsProps = {
   item: Pick<GalleryItem, 'id' | 'title' | 'visibility'>;
@@ -139,26 +140,11 @@ function MediaActions({ item, onUpdated, onDeleted }: MediaActionsProps) {
                 />
               </label>
 
-              <label className="block">
-                <span className="field-label">Visibility</span>
-                <select
-                  className="field"
-                  value={visibility}
-                  onChange={(event) =>
-                    setVisibility(
-                      event.target.value as GalleryItem['visibility'],
-                    )
-                  }
-                  disabled={isSubmitting}
-                >
-                  <option value="private">Private — only you</option>
-                  <option value="public">Public — everyone</option>
-                </select>
-              </label>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Public images appear in the gallery and can be viewed without
-                signing in.
-              </p>
+              <VisibilitySelect
+                value={visibility}
+                onChange={setVisibility}
+                disabled={isSubmitting}
+              />
 
               <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-5 dark:border-slate-800">
                 <button

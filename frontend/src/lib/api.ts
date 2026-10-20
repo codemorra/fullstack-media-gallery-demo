@@ -19,6 +19,7 @@ export type GalleryItem = {
   title: string;
   file_path: string;
   owner_id: number;
+  owner_username: string;
   visibility: 'public' | 'private';
   created_at: string;
 };
@@ -159,17 +160,23 @@ export function getMyGallery(): Promise<GalleryResponse> {
 }
 
 /**
- * Uploads an image as a private media record for the signed-in user.
+ * Uploads an image with the selected visibility for the signed-in user.
  *
  * @param title - The descriptive title of the image.
  * @param file - The JPEG, PNG, or WebP file to upload.
- * @returns The newly created private media record.
+ * @param visibility - Who may view the image; defaults to private.
+ * @returns The newly created media record including its uploader's username.
  * @throws {Error} If validation, authentication, or the upload fails.
  */
-export function uploadImage(title: string, file: File): Promise<GalleryItem> {
+export function uploadImage(
+  title: string,
+  file: File,
+  visibility: GalleryItem['visibility'] = 'private',
+): Promise<GalleryItem> {
   const formData = new FormData();
   formData.append('title', title);
   formData.append('file', file);
+  formData.append('visibility', visibility);
 
   return apiRequest<GalleryItem>('/api/media', {
     method: 'POST',
