@@ -7,8 +7,8 @@ A small learning and portfolio project for building a fullstack media gallery. I
 [Open the static frontend preview](https://codemorra.github.io/fullstack-media-gallery-demo/)
 
 GitHub Pages hosts only the static frontend. The public sample gallery is
-available, while registration, login, logout, the personal gallery, and future
-upload features require a backend.
+available, while registration, login, logout, the personal gallery, and image
+uploads require a backend.
 
 ## Current status
 
@@ -22,9 +22,11 @@ Work in progress. The current version includes:
 - Alembic database migrations for schema changes
 - a media model with ownership and visibility, plus a local demo seed script
 - a public gallery API that returns only public media records
+- authenticated image uploads with Pillow validation and WebP conversion
+- image file access restricted by visibility and ownership
 
-Media uploads, editing and deleting images, visibility controls, image processing,
-and further visual polish are planned for later iterations.
+Editing and deleting images, visibility controls, downloads in different
+resolutions, and further visual polish are planned for later iterations.
 
 ## Run locally
 
@@ -78,9 +80,9 @@ media records referencing the existing sample images, four public and two
 private. Running it again adds missing records without resetting passwords
 or overwriting existing media.
 
-Visibility currently applies only to database records. The sample image files
-in `frontend/public/` remain publicly accessible regardless of their records'
-visibility.
+The demo image files in `frontend/public/` remain publicly accessible regardless
+of their database records' visibility. Newly uploaded files are stored separately
+and have access checks when retrieved through the backend.
 
 With the backend running, `GET /api/gallery` returns public media records
 without requiring login. After seeding a fresh database, it returns four items;
@@ -111,10 +113,29 @@ gallery displays an empty state.
 
 After login, the app opens **My images**, the protected personal gallery.
 Demo Alex sees samples 01-03 and Demo Sam sees samples 04-06. A newly registered
-account has an empty personal gallery until image uploads are implemented.
+account starts with an empty personal gallery and can add images using the
+upload form.
 
 Without `VITE_API_BASE_URL`, the gallery shows all six static sample images,
 as in the GitHub Pages preview. Restart Vite after changing the configuration.
+
+### Image uploads
+
+Run both applications, log in, and open **My images**. Enter a title and select
+a JPEG, PNG, or WebP file, then click **Upload image**. New images are private
+and appear immediately in the personal gallery. Publishing them is not yet
+available.
+
+Uploads are limited to 10 MiB and 20 million pixels. Animated images are not
+supported. Pillow validates the actual image contents, applies EXIF orientation,
+and saves a new WebP file without the original metadata. The original file is
+not retained.
+
+Files are stored in `backend/uploads/`, which is created automatically and
+ignored by Git. The frontend loads backend images through
+`GET /api/media/{id}/file`: public images are accessible without login, while
+private images require their owner's session. The upload endpoint is
+`POST /api/media`, accepting `title` and `file` as multipart form fields.
 
 ## License
 
