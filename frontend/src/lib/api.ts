@@ -27,6 +27,10 @@ export type GalleryResponse = {
   items: GalleryItem[];
 };
 
+export type MediaUpdateData = Partial<
+  Pick<GalleryItem, 'title' | 'visibility'>
+>;
+
 // This type represents the error response returned by the backend API.
 type ApiErrorResponse = {
   detail?: string | { msg: string }[];
@@ -170,6 +174,37 @@ export function uploadImage(title: string, file: File): Promise<GalleryItem> {
   return apiRequest<GalleryItem>('/api/media', {
     method: 'POST',
     body: formData,
+  });
+}
+
+/**
+ * Updates the title and/or visibility of an image owned by the signed-in user.
+ *
+ * @param mediaId - The ID of the image to update.
+ * @param data - The title and/or visibility fields to change.
+ * @returns The updated media record.
+ * @throws {Error} If validation, ownership checks, or the request fails.
+ */
+export function updateImage(
+  mediaId: number,
+  data: MediaUpdateData,
+): Promise<GalleryItem> {
+  return apiRequest<GalleryItem>(`/api/media/${mediaId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Deletes an image owned by the signed-in user.
+ *
+ * @param mediaId - The ID of the image to delete.
+ * @returns A promise that resolves when the image record has been deleted.
+ * @throws {Error} If authentication, ownership checks, or the request fails.
+ */
+export function deleteImage(mediaId: number): Promise<void> {
+  return apiRequest<void>(`/api/media/${mediaId}`, {
+    method: 'DELETE',
   });
 }
 

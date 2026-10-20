@@ -55,9 +55,7 @@ function UploadForm({ onUploaded }: UploadFormProps) {
       setTitle('');
       setFile(null);
       form.reset();
-      setSuccessMessage(
-        'Image uploaded. It is private and only visible to you.',
-      );
+      setSuccessMessage('Image uploaded as private.');
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : 'Upload failed.',
